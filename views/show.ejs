@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
+<style>
+
+</style>
+  </head>
+  <body>
+    <nav id="navbar" class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 shadow-sm bg-gray-100">
+        <div class="text-lg font-semibold ">Inspira</div>
+        <div class="space-x-4">
+          <a href="/home" class="text-sm hover:text-blue-500">Home</a>
+          <a href="/explore" class="text-sm hover:text-blue-500">Explore</a>
+          <a href="/feed" class="text-sm hover:text-blue-500">Feed</a>
+          <a href="/logout" class="text-sm hover:text-Red-500  bg-red-700 p-2 rounded">Logout</a>
+        </div>
+      </nav>
+      <div class="bg-zinc-800 min-h-screen px-8 py-8 text-white">
+        <div class="cards flex flex-wrap gap-10  ">
+            <% user.posts.forEach(function(elem){ %>
+                <div class="card flex flex-col items-center w-54">
+                    <div class="w-54 h-40 bg-sky-100 rounded-lg overflow-hidden m-2">
+                        <img src="/images/uploads/<%= elem.image %>" class="w-full h-full object-cover">
+                    </div>
+                    <h5  href="" class="text-sm font-medium opacity-60 m-2"> <%=elem.title%>
+                    </h5>
+                </div>
+            <% }); %>
+            
+
+        </div>
+
+      </div>
+  </body>
+</html>

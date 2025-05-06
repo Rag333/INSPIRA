@@ -1,0 +1,18 @@
+body {
+    font-family: 'Doto', sans-serif;
+  }
+  
+ 
+  #cont{
+    border-radius: 50px;
+  }
+  #image img {
+    max-height: 420px;
+    width: auto;
+  }
+  .arrow{
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }

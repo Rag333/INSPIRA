@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Inspira</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./stylesheets/register.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+</head>
+<body>
+  <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center px-2 bg-dark">
+    <div class="row shadow-lg rounded-4 overflow-hidden w-100" style="max-width: 760px;">
+      
+      <!-- Form Side -->
+      <div class="col-md-6 p-4 bg-white">
+        <h2 class="fw-bold mb-2">Login Your Account !</h2>
+        <p class="text-muted mb-4">Sign In to get started with <strong>Inspira</strong></p>
+
+        <form action="/login" method="post">
+          <div class="mb-4 " id="cont">
+            <label for="nameInput" class="form-label">Username</label>
+            <input type="text" name="username" class="form-control rounded-pill" id="nameInput" placeholder="User123" />
+          </div> 
+          <div class="mb-4">
+            <label for="passwordInput" class="form-label">Password</label>
+            <input type="password" name="password"     class="form-control rounded-pill" id="passwordInput" placeholder="••••••••" />
+          </div>
+          <button type="submit" class="btn btn-primary w-100 rounded-pill mt-2 bg-black btn-outline-white"  >Sign In</button>
+
+          <div class="text-center my-3 text-muted">or continue with</div>
+
+          <!-- Social Logins -->
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-dark w-50 rounded-pill">
+              <i class="bi bi-google"></i> Google
+            </button>
+            <button type="button" class="btn btn-outline-dark w-50 rounded-pill">
+              <i class="bi bi-facebook"></i> Facebook
+            </button>
+          </div>
+        </form>
+
+        <p class="mt-4 text-center text-muted">
+          Don't have an account? <a href="/register" class="text-primary text-decoration-none ">Sign Up</a>
+        </p>
+      </div>
+
+      <!-- Illustration Side -->
+      <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center bg-white p-4" id="image">
+        <img src="https://plus.unsplash.com/premium_vector-1698192179822-10078247745e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YXZhY2FyZG98ZW58MHx8MHx8fDA%3D" alt="Illustration" class="img-fluid rounded-4" style="max-height: 850px;" />
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

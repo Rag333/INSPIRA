@@ -1,0 +1,15 @@
+.footer-socials {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .footer-socials img {
+    width: 30px;
+    height: 30px;
+    transition: transform 0.2s ease;
+  }
+  
+  .footer-socials img:hover {
+    transform: scale(1.1);
+  }
