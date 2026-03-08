@@ -1,4 +1,8 @@
 var express = require('express');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 var router = express.Router();
 const userModel = require('./users');
 const postModel = require('./posts');
@@ -51,6 +55,40 @@ router.post('/createpost',isLoggedIn, upload.single('postImage') ,async function
   user.posts.push(post._id);
   await user.save();
   res.redirect('/profile');
+});
+
+router.post('/createpost/ai', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({username: req.session.passport.user});
+    const { title, description, imageUrl } = req.body;
+    
+    // Download the image
+    const response = await axios({
+      url: imageUrl,
+      method: 'GET',
+      responseType: 'arraybuffer'
+    });
+
+    const uniqueFile = uuidv4() + '.jpg'; // pollinations typically returns jpeg
+    const imagePath = path.join(__dirname, '../public/images/uploads', uniqueFile);
+    
+    fs.writeFileSync(imagePath, response.data);
+
+    const post = await postModel.create({
+      user: user._id,
+      title: title,
+      description: description,
+      image: uniqueFile
+    });
+    
+    user.posts.push(post._id);
+    await user.save();
+    
+    res.json({ success: true, post: post });
+  } catch (error) {
+    console.error("Error creating AI post:", error);
+    res.status(500).json({ success: false, error: "Failed to download image and create post" });
+  }
 });
 
 

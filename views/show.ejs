@@ -4,39 +4,72 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link
-    href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css"
-    rel="stylesheet"
-/>
-<style>
-
-</style>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <style>
+      /* Smooth image loading */
+      img { transition: opacity 0.3s ease-in-out; }
+      img[loading] { opacity: 0; }
+      img.loaded { opacity: 1; }
+      
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
   </head>
-  <body>
-    <nav id="navbar" class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 shadow-sm bg-gray-100">
-        <div class="text-lg font-semibold ">Inspira</div>
-        <div class="space-x-4">
-          <a href="/home" class="text-sm hover:text-blue-500">Home</a>
-          <a href="/explore" class="text-sm hover:text-blue-500">Explore</a>
-          <a href="/feed" class="text-sm hover:text-blue-500">Feed</a>
-          <a href="/logout" class="text-sm hover:text-Red-500  bg-red-700 p-2 rounded">Logout</a>
+  <body class="bg-gray-50 min-h-screen font-sans">
+    
+    <!-- Glassmorphism Navbar -->
+    <nav id="navbar" class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-white/80 shadow-sm border-b border-gray-200/50 transition-all duration-300">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold italic">I</div>
+            <div class="text-xl font-bold tracking-tight text-gray-900">Inspira</div>
         </div>
-      </nav>
-      <div class="bg-zinc-800 min-h-screen px-8 py-8 text-white">
-        <div class="cards flex flex-wrap gap-10  ">
-            <% user.posts.forEach(function(elem){ %>
-                <div class="card flex flex-col items-center w-54">
-                    <div class="w-54 h-40 bg-sky-100 rounded-lg overflow-hidden m-2">
-                        <img src="/images/uploads/<%= elem.image %>" class="w-full h-full object-cover">
+        
+        <div class="flex items-center space-x-2 md:space-x-4">
+          <a href="/home" class="px-4 py-2 text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors text-gray-700">Home</a>
+          <a href="/feed" class="px-4 py-2 text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors text-gray-700">Feed</a>
+          <a href="/profile" class="px-4 py-2 text-sm font-semibold rounded-full bg-gray-900 text-white hover:bg-gray-800 transition-colors">Profile</a>
+          <a href="/add" class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors"><i class="ri-add-line text-xl"></i></a>
+          <a href="/logout" class="px-4 py-2 text-sm font-semibold rounded-full text-red-600 hover:bg-red-50 transition-colors">Logout</a>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-[2000px] mx-auto px-4 sm:px-6 py-8">
+        <div class="mb-8 flex items-center gap-4">
+            <a href="/profile" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors">
+                <i class="ri-arrow-left-line text-xl text-gray-700"></i>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Your Pins</h1>
+        </div>
+
+        <% if (user.posts.length === 0) { %>
+            <div class="flex flex-col items-center justify-center mt-20 text-gray-500">
+                <i class="ri-image-line text-6xl mb-4 opacity-50"></i>
+                <h2 class="text-xl font-semibold">You haven't saved any pins yet</h2>
+                <a href="/add" class="mt-6 px-6 py-3 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition-colors shadow-md">Create Pin</a>
+            </div>
+        <% } else { %>
+            <div class="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-4 space-y-4">
+                <% user.posts.forEach(function(elem){ %>
+                    <!-- Pin Card -->
+                    <div class="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300">
+                        <img src="/images/uploads/<%= elem.image %>" class="w-full object-cover rounded-2xl group-hover:brightness-75 transition-all duration-300" onload="this.classList.add('loaded')" loading="lazy" alt="<%= elem.title %>">
+                        
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 bg-black/20">
+                            <div class="flex justify-end gap-2 text-white">
+                                <button class="w-8 h-8 rounded-full bg-white/30 backdrop-blur-md hover:bg-white/50 flex items-center justify-center transition-colors"><i class="ri-pencil-line text-sm"></i></button>
+                            </div>
+                        </div>
                     </div>
-                    <h5  href="" class="text-sm font-medium opacity-60 m-2"> <%=elem.title%>
-                    </h5>
-                </div>
-            <% }); %>
-            
-
-        </div>
-
-      </div>
+                    <!-- Details below image -->
+                    <div class="mt-2 mb-6 px-1 flex justify-between items-center">
+                        <h5 class="text-sm font-semibold text-gray-900 truncate leading-tight flex-1"><%= elem.title || "Untitled Pin" %></h5>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </main>
   </body>
 </html>
