@@ -124,26 +124,34 @@ export default function Feed() {
       )}
 
       {posts.length === 0 ? (
-        <>
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Inspiration for you</h2>
-                <p className="text-gray-500 font-medium">Discover new ideas and save them</p>
-            </div>
+        searchQuery ? (
+          <div className="w-full flex flex-col items-center justify-center min-h-[400px]">
+             <i className="ri-search-eye-line text-6xl text-gray-300 mb-4"></i>
+             <h2 className="text-2xl font-bold text-gray-800">No matching pins found</h2>
+             <p className="text-gray-500 mt-2">Try searching for a different aesthetic or keyword!</p>
           </div>
-          <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-4">
-            {fallbacks.map((fallbackUrl, idx) => (
-              <div key={idx} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300">
-                <img src={fallbackUrl} className="w-full object-cover rounded-2xl group-hover:brightness-75 transition-all duration-300" onLoad={(e) => e.target.classList.add('loaded')} loading="lazy" alt={`Inspiration idea ${idx + 1}`} />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 bg-black/20">
-                    <div className="flex justify-end">
-                        <button className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95">Save</button>
-                    </div>
-                </div>
+        ) : (
+          <>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                  <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Inspiration for you</h2>
+                  <p className="text-gray-500 font-medium">Discover new ideas and save them</p>
               </div>
-            ))}
-          </div>
-        </>
+            </div>
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-4">
+              {fallbacks.map((fallbackUrl, idx) => (
+                <div key={idx} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300">
+                  <img src={fallbackUrl} className="w-full object-cover rounded-2xl group-hover:brightness-75 transition-all duration-300" onLoad={(e) => e.target.classList.add('loaded')} loading="lazy" alt={`Inspiration idea ${idx + 1}`} />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 bg-black/20">
+                      <div className="flex justify-end">
+                          <button className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95">Save</button>
+                      </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )
       ) : (
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-4">
           {posts.map((elem, idx) => (

@@ -32,16 +32,7 @@ export default function AIPortal({ isOpen, onClose }) {
     const seed = Math.floor(Math.random() * 1000000);
     const pollinationsUrl = `https://image.pollinations.ai/prompt/${safePrompt}?nologo=true&seed=${seed}&width=800&height=1200`;
 
-    const img = new Image();
-    img.onload = () => {
-      setPreview(pollinationsUrl);
-      setLoadingAi(false);
-    };
-    img.onerror = () => {
-      setLoadingAi(false);
-      alert('Failed to generate image. Please try again.');
-    };
-    img.src = pollinationsUrl;
+    setPreview(pollinationsUrl);
   };
 
   const handleChatSubmit = async (e) => {
@@ -55,8 +46,9 @@ export default function AIPortal({ isOpen, onClose }) {
 
     try {
       const encodedPrompt = encodeURIComponent(`You are a creative Assistant for a Pinterest clone called Inspira. Generate a short, highly descriptive image prompt based on this request: "${userText}". Only respond with the image prompt itself, nothing else.`);
-      const res = await axios.get(`https://text.pollinations.ai/${encodedPrompt}`);
-      setChatMessages(prev => [...prev, { role: 'assistant', text: res.data }]);
+      const res = await fetch(`https://text.pollinations.ai/${encodedPrompt}`);
+      const text = await res.text();
+      setChatMessages(prev => [...prev, { role: 'assistant', text: text }]);
     } catch (err) {
       setChatMessages(prev => [...prev, { role: 'assistant', text: "Sorry, my creative gears are jammed right now!" }]);
     } finally {
@@ -133,7 +125,13 @@ export default function AIPortal({ isOpen, onClose }) {
               <div className="flex-1 bg-zinc-800 rounded-2xl flex flex-col items-center justify-center min-h-[300px] border border-zinc-700 relative overflow-hidden group w-full max-w-[400px]">
                   {preview ? (
                       <>
-                          <img src={preview} className="w-full h-full object-cover animate-fade-in" alt="Generated" />
+                          <img 
+                            src={preview} 
+                            className="w-full h-full object-cover animate-fade-in" 
+                            alt="Generated" 
+                            onLoad={() => setLoadingAi(false)}
+                            onError={() => { setLoadingAi(false); alert("Failed to fetch image. Please try again."); }}
+                          />
                           <button onClick={clearImage} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-md transition-colors shadow-lg cursor-pointer"><i className="ri-close-line"></i></button>
                           
                           <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">

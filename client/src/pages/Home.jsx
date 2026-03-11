@@ -12,20 +12,26 @@ export default function Home() {
   const fetchImages = async (pageNumber) => {
     setLoading(true);
     try {
-      // Use standard lightweight thumbnails to prevent DOM overwhelming
-      const res = await axios.get(`https://picsum.photos/v2/list?page=${pageNumber}&limit=20`);
-      
-      const fastImages = res.data.map((img, index) => {
-          // Pre-compute basic standard aspect ratios (tall vs square) instead of true random bounds
-          // So the masonry grid locks in firmly without jumping
-          const isTall = index % 3 === 0;
-          return {
-             id: img.id,
-             url: `https://picsum.photos/id/${img.id}/400/${isTall ? '600' : '400'}`,
-             author: img.author
-          }
-      });
-      setImages(prev => [...prev, ...fastImages]);
+      const curatedDeck = [
+        { id: `a-${pageNumber}`, url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400&auto=format&fit=crop&q=80", author: "Sarah Modern", tall: true },
+        { id: `b-${pageNumber}`, url: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=400&auto=format&fit=crop&q=80", author: "Luxe Interiors", tall: false },
+        { id: `c-${pageNumber}`, url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80", author: "Japandi Style", tall: true },
+        { id: `d-${pageNumber}`, url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&auto=format&fit=crop&q=80", author: "Minimalist Haven", tall: false },
+        { id: `e-${pageNumber}`, url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80", author: "Cozy Living", tall: false },
+        { id: `f-${pageNumber}`, url: "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=400&auto=format&fit=crop&q=80", author: "Boho Chic", tall: true },
+        { id: `g-${pageNumber}`, url: "https://images.unsplash.com/photo-1618220179428-22790b46a0eb?w=400&auto=format&fit=crop&q=80", author: "Urban Loft", tall: false },
+        { id: `h-${pageNumber}`, url: "https://images.unsplash.com/photo-1600607686527-6fb886090705?w=400&auto=format&fit=crop&q=80", author: "Nordic Space", tall: true },
+        { id: `i-${pageNumber}`, url: "https://images.unsplash.com/photo-1615529182904-14819c35db37?w=400&auto=format&fit=crop&q=80", author: "Midcentury Retro", tall: false },
+        { id: `j-${pageNumber}`, url: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400&auto=format&fit=crop&q=80", author: "Studio Setup", tall: false },
+        { id: `k-${pageNumber}`, url: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=400&auto=format&fit=crop&q=80", author: "Modern Kitchen", tall: true },
+        { id: `l-${pageNumber}`, url: "https://images.unsplash.com/photo-1615873968403-89e068629265?w=400&auto=format&fit=crop&q=80", author: "Dark Academia", tall: false },
+        { id: `m-${pageNumber}`, url: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=400&auto=format&fit=crop&q=80", author: "Warm Scandinavian", tall: true },
+        { id: `n-${pageNumber}`, url: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=400&auto=format&fit=crop&q=80", author: "Industrial Vibe", tall: false },
+        { id: `o-${pageNumber}`, url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&auto=format&fit=crop&q=80", author: "Pastel Dream", tall: true },
+        { id: `p-${pageNumber}`, url: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=400&auto=format&fit=crop&q=80", author: "Vintage Room", tall: false },
+      ];
+      const shuffled = [...curatedDeck].sort(() => 0.5 - Math.random());
+      setImages(prev => [...prev, ...shuffled]);
     } catch (error) {
       console.error('Error fetching images:', error);
     } finally {

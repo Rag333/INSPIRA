@@ -125,10 +125,10 @@ router.post('/save/:postId', isLoggedIn, async function(req, res, next) {
     const user = await userModel.findOne({username: req.session.passport.user});
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    const postToSave = req.params.postId;
+    const postToSave = req.params.postId.toString();
     
-    // Toggle save
-    const indexOfPost = user.savedPosts.indexOf(postToSave);
+    // Toggle save mapping ObjectIds properly to strings
+    const indexOfPost = user.savedPosts.findIndex(id => id.toString() === postToSave);
     if (indexOfPost === -1) {
       user.savedPosts.push(postToSave);
     } else {
