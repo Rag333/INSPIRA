@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema({
     required:true,
     unique:true,
   },
+  googleId:{
+    type:String,
+    unique:true,
+    sparse:true
+  },
   profileImage:{
     type:String
   },
@@ -18,6 +23,10 @@ const userSchema = new mongoose.Schema({
   posts:[{
     type : mongoose.Schema.Types.ObjectId,
     ref:'Post'
+  }],
+  savedPosts:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
   }]
 })
 userSchema.plugin(plm);
