@@ -166,12 +166,10 @@ router.post("/createpost/ai", isLoggedIn, async function (req, res, next) {
     res.json({ success: true, post: post });
   } catch (error) {
     console.error("Error creating AI post:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        error: "Failed to download image and create post",
-      });
+    res.status(500).json({
+      success: false,
+      error: "Failed to download image and create post",
+    });
   }
 });
 
