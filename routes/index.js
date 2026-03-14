@@ -16,6 +16,22 @@ router.get('/profile', isLoggedIn ,async function(req, res, next) {
     .populate('savedPosts');
   res.json({ success: true, user: user });
 });
+
+// Public profile — anyone can view another user's posts
+router.get('/user/:username', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({ username: req.params.username }).populate('posts');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user: { 
+      username: user.username, 
+      fullname: user.fullname, 
+      profileImage: user.profileImage,
+      posts: user.posts 
+    }});
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 router.get('/show/posts', isLoggedIn ,async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user}).populate('posts');
   res.json({ success: true, user: user });
@@ -36,7 +52,7 @@ router.get('/feed', isLoggedIn ,async function(req, res, next) {
     };
   }
 
-  const posts = await postModel.find(searchCriteria).populate('user').sort({ _id: -1 });
+  const posts = await postModel.find({ ...searchCriteria, user: { $ne: user._id } }).populate('user').sort({ _id: -1 });
   
   // Fallback images if no posts exist
   const unsplashFallbacks = [
@@ -55,7 +71,8 @@ router.get('/feed', isLoggedIn ,async function(req, res, next) {
     success: true,
     user,
     posts, 
-    fallbacks: unsplashFallbacks 
+    fallbacks: unsplashFallbacks,
+    likedPostIds: (user.likedPosts || []).map(id => id.toString())
   });
 });
 
@@ -143,12 +160,125 @@ router.post('/save/:postId', isLoggedIn, async function(req, res, next) {
   }
 });
 
+// Toggle like on a post — persists to DB, sends notification on first like
+router.post('/like/:postId', isLoggedIn, async function(req, res, next) {
+  try {
+    const liker = await userModel.findOne({ username: req.session.passport.user });
+    const post = await postModel.findById(req.params.postId).populate('user');
+    if (!post) return res.status(404).json({ success: false });
+
+    const alreadyLiked = liker.likedPosts.some(id => id.toString() === post._id.toString());
+
+    if (alreadyLiked) {
+      // Unlike
+      liker.likedPosts = liker.likedPosts.filter(id => id.toString() !== post._id.toString());
+      post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
+    } else {
+      // Like
+      liker.likedPosts.push(post._id);
+      post.likesCount = (post.likesCount || 0) + 1;
+
+      // Notify post owner (only on first like, skip self-likes)
+      if (post.user && post.user._id.toString() !== liker._id.toString()) {
+        const postOwner = await userModel.findById(post.user._id);
+        if (postOwner) {
+          const notifExists = postOwner.notifications.some(
+            n => n.likerUsername === liker.username && n.postId?.toString() === post._id.toString()
+          );
+          if (!notifExists) {
+            postOwner.notifications.unshift({
+              type: 'like',
+              message: `${liker.username} liked your pin "${post.title}"`,
+              likerUsername: liker.username,
+              likerProfileImage: liker.profileImage || '',
+              postId: post._id,
+              postImage: post.image,
+              read: false,
+              createdAt: new Date()
+            });
+            if (postOwner.notifications.length > 50) postOwner.notifications = postOwner.notifications.slice(0, 50);
+            await postOwner.save();
+          }
+        }
+      }
+    }
+
+    await liker.save();
+    await post.save();
+    res.json({ success: true, liked: !alreadyLiked, likesCount: post.likesCount });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Get notifications for the logged-in user
+router.get('/notifications', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({ username: req.session.passport.user });
+    const notifications = (user.notifications || []).slice(0, 30);
+    const unread = notifications.filter(n => !n.read).length;
+    res.json({ success: true, notifications, unread });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+// Mark all notifications as read
+router.post('/notifications/read', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({ username: req.session.passport.user });
+    user.notifications.forEach(n => { n.read = true; });
+    await user.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
 router.post('/uploadfile', isLoggedIn ,upload.single('image') ,async (req,res,next)=>{
   const user = await userModel.findOne({username : req.session.passport.user});
   user.profileImage = req.file.filename;
   await user.save();
   res.json({ success: true, user: user });
-})
+});
+
+// Edit profile — update fullname and email
+router.post('/profile/edit', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({ username: req.session.passport.user });
+    if (!user) return res.status(404).json({ success: false });
+    if (req.body.fullname !== undefined) user.fullname = req.body.fullname.trim();
+    if (req.body.email !== undefined) user.email = req.body.email.trim();
+    await user.save();
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Delete a post created by the logged-in user
+router.delete('/post/:postId', isLoggedIn, async function(req, res, next) {
+  try {
+    const user = await userModel.findOne({ username: req.session.passport.user });
+    const post = await postModel.findById(req.params.postId);
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+    // Ensure it belongs to this user
+    if (post.user.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    // Remove image file from disk
+    const imagePath = path.join(__dirname, '../public/images/uploads', post.image);
+    if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+    // Remove from user's posts array
+    user.posts = user.posts.filter(id => id.toString() !== post._id.toString());
+    await user.save();
+    // Delete the post document
+    await postModel.findByIdAndDelete(post._id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 router.post('/register',function(req,res){
   const{username,email,fullname} = req.body;
   const newUser = new userModel({username,email,fullname});

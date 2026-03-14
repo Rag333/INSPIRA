@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AIPortal from './AIPortal';
+import NotificationBell from './NotificationBell';
 
-export default function Navbar() {
+export default function Navbar({ onOpenAI }) {
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [aiPortalOpen, setAiPortalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -63,13 +62,15 @@ export default function Navbar() {
 
         <div className="flex items-center space-x-2 md:space-x-4">
           <button 
-             onClick={() => setAiPortalOpen(!aiPortalOpen)}
-             className={`px-4 py-2 text-sm font-bold rounded-full transition-colors ${aiPortalOpen ? 'bg-indigo-100 text-indigo-700' : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md'} cursor-pointer flex items-center gap-1`}
+             onClick={onOpenAI}
+             className="px-4 py-2 text-sm font-bold rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md cursor-pointer flex items-center gap-1 transition-opacity"
           >
              <i className="ri-magic-line"></i> AI Magic
           </button>
           
           <Link to="/feed" className="px-4 py-2 text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors text-gray-700">Explore</Link>
+          
+          {user && <NotificationBell />}
           
           {user ? (
             <div className="relative" ref={dropdownRef}>
@@ -104,9 +105,6 @@ export default function Navbar() {
             </>
           )}
         </div>
-        
-        {/* The global AI Studio Dropdown Overlay */}
-        <AIPortal isOpen={aiPortalOpen} onClose={() => setAiPortalOpen(false)} />
         
     </nav>
   );

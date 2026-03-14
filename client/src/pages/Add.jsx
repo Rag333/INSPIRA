@@ -42,53 +42,81 @@ export default function Add() {
     }
   }, [chatMessages]);
 
+  // Smart client-side prompt builder — instant, no API dependency
+  const buildPrompt = (userText) => {
+    const styles = ['hyperrealistic photography', 'cinematic still', '8K ultra-detailed', 'award-winning photo', 'editorial style'];
+    const lighting = ['golden hour lighting', 'soft diffused light', 'dramatic side lighting', 'natural window light', 'warm ambient glow'];
+    const moods = ['cozy and intimate', 'serene and peaceful', 'vibrant and energetic', 'dark and atmospheric', 'bright and airy', 'elegant and luxurious'];
+    const camera = ['shot on Sony A7R IV', 'shallow depth of field', 'bokeh background', 'wide angle lens', '85mm portrait lens'];
+    const extras = ['highly detailed', 'sharp focus', 'professional color grading', 'trending on Pinterest', 'visually stunning'];
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    return `${userText}, ${pick(moods)}, ${pick(lighting)}, ${pick(styles)}, ${pick(camera)}, ${pick(extras)}`;
+  };
+
   const handleChatSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!chatInput.trim()) return;
-
     const userText = chatInput.trim();
     setChatMessages(prev => [...prev, { role: 'user', text: userText }]);
     setChatInput('');
     setLoadingChat(true);
-
-    try {
-      const encodedPrompt = encodeURIComponent(`You are a creative Assistant for a Pinterest clone called Inspira. Generate a short, highly descriptive image prompt based on this request: "${userText}". Only respond with the image prompt itself, nothing else.`);
-      const res = await axios.get(`https://text.pollinations.ai/${encodedPrompt}`);
-      setChatMessages(prev => [...prev, { role: 'assistant', text: res.data }]);
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'assistant', text: "Sorry, my creative gears are jammed right now!" }]);
-    } finally {
-      setLoadingChat(false);
-    }
+    await new Promise(r => setTimeout(r, 600));
+    const generated = buildPrompt(userText);
+    setChatMessages(prev => [...prev, { role: 'assistant', text: generated }]);
+    setLoadingChat(false);
   };
 
   const useAsPrompt = (text) => {
       setPrompt(text);
   };
 
-  const handleGenerateAi = () => {
+  const handleGenerateAi = async () => {
     if (!prompt.trim()) return alert('Please enter a prompt for the AI');
-    
     setLoadingAi(true);
     setFile(null);
     setPreview('');
     setAiUrl('');
 
-    const safePrompt = encodeURIComponent(prompt.trim());
-    const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${safePrompt}?nologo=true&seed=${seed}&width=800&height=1200`;
+    try {
+      // Submit to AI Horde (free, anonymous)
+      const submitRes = await fetch('https://stablehorde.net/api/v2/generate/async', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': '0000000000' },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          params: { width: 512, height: 768, steps: 20, n: 1, sampler_name: 'k_euler_a' },
+          nsfw: false,
+          models: ['stable_diffusion']
+        })
+      });
+      if (!submitRes.ok) throw new Error('Submit failed');
+      const { id } = await submitRes.json();
 
-    const img = new Image();
-    img.onload = () => {
-      setPreview(pollinationsUrl);
-      setAiUrl(pollinationsUrl);
+      // Poll until done
+      let imageUrl = null;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await new Promise(r => setTimeout(r, 5000));
+        const checkRes = await fetch(`https://stablehorde.net/api/v2/generate/check/${id}`);
+        const checkData = await checkRes.json();
+        if (checkData.done) {
+          const statusRes = await fetch(`https://stablehorde.net/api/v2/generate/status/${id}`);
+          const statusData = await statusRes.json();
+          imageUrl = statusData.generations?.[0]?.img;
+          break;
+        }
+      }
+
+      if (imageUrl) {
+        setPreview(imageUrl);
+        setAiUrl(imageUrl);
+      } else {
+        alert('Generation timed out. Please try again.');
+      }
+    } catch (err) {
+      alert('Image generation failed. Please try again.');
+    } finally {
       setLoadingAi(false);
-    };
-    img.onerror = () => {
-      setLoadingAi(false);
-      alert('Failed to generate image. Please try again.');
-    };
-    img.src = pollinationsUrl;
+    }
   };
 
   const clearImage = () => {
@@ -142,20 +170,27 @@ export default function Add() {
           <div className="flex-1 bg-zinc-800 p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center min-h-[400px] border border-zinc-700 relative overflow-hidden group transition-all">
               
               {(preview || loadingAi) && (
-                <div className="w-full h-full absolute inset-0 bg-zinc-800 z-10 flex flex-col items-center justify-center">
-                    {preview && <img src={preview} className="w-full h-full object-cover" alt="Preview" />}
-                    
-                    {!loadingAi && (
-                      <button onClick={clearImage} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full cursor-pointer transition-colors backdrop-blur-md">
+                <div className="w-full h-full absolute inset-0 bg-zinc-800 z-10 flex flex-col items-center justify-center overflow-hidden">
+                    {/* Spinner overlay on TOP while loading — image still loads underneath */}
+                    {loadingAi && (
+                      <div className="absolute inset-0 bg-zinc-800 flex flex-col items-center justify-center z-20">
+                          <i className="ri-loader-4-line text-4xl animate-spin text-indigo-400 mb-3"></i>
+                          <p className="text-sm font-medium text-zinc-300">Generating your image...</p>
+                          <p className="text-xs text-zinc-500 mt-1">This may take 20–60 seconds</p>
+                      </div>
+                    )}
+                    {preview && (
+                      <img 
+                        src={preview} 
+                        className="w-full h-full object-cover" 
+                        alt="Preview"
+                        onLoad={() => setLoadingAi(false)}
+                      />
+                    )}
+                    {!loadingAi && preview && (
+                      <button onClick={clearImage} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full cursor-pointer transition-colors backdrop-blur-md z-30">
                           <i className="ri-close-line text-xl"></i>
                       </button>
-                    )}
-
-                    {loadingAi && (
-                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center backdrop-blur-sm z-20">
-                          <i className="ri-loader-4-line text-4xl animate-spin text-white mb-2"></i>
-                          <p className="text-sm font-medium">Generating your masterpiece...</p>
-                      </div>
                     )}
                 </div>
               )}
@@ -178,9 +213,9 @@ export default function Add() {
                   {/* AI Prompt Generator */}
                   <div className="w-full flex gap-2">
                       <input type="text" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Image prompt (e.g. A cyberpunk city)" className="flex-1 bg-zinc-700 text-white px-4 py-3 rounded-xl border border-zinc-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm" />
-                      <button type="button" onClick={handleGenerateAi} className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer disabled:opacity-50">
-                          <i className="ri-magic-line"></i>
-                      </button>
+                       <button type="button" onClick={handleGenerateAi} disabled={loadingAi} className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 disabled:opacity-50 text-white font-semibold py-3 px-5 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer">
+                           {loadingAi ? <i className="ri-loader-4-line animate-spin"></i> : <i className="ri-magic-line"></i>}
+                       </button>
                   </div>
               </div>
           </div>

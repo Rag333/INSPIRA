@@ -27,6 +27,20 @@ const userSchema = new mongoose.Schema({
   savedPosts:[{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post'
+  }],
+  notifications: [{
+    type: { type: String, default: 'like' },
+    message: String,
+    likerUsername: String,
+    likerProfileImage: String,
+    postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
+    postImage: String,
+    read: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  likedPosts: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
   }]
 })
 userSchema.plugin(plm);

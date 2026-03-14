@@ -11,6 +11,7 @@ export default function AIPortal({ isOpen, onClose }) {
     { role: 'assistant', text: 'Stuck? I am your AI Idea Builder! Ask me for a prompt!' }
   ]);
   const [loadingChat, setLoadingChat] = useState(false);
+  const [history, setHistory] = useState([]);
   
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
@@ -22,17 +23,70 @@ export default function AIPortal({ isOpen, onClose }) {
     }
   }, [chatMessages, isOpen]);
 
-  const handleGenerateAi = () => {
+  const handleGenerateAi = async () => {
     if (!prompt.trim()) return alert('Please enter a prompt for the AI');
-    
     setLoadingAi(true);
     setPreview('');
 
-    const safePrompt = encodeURIComponent(prompt.trim());
-    const seed = Math.floor(Math.random() * 1000000);
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${safePrompt}?nologo=true&seed=${seed}&width=800&height=1200`;
+    try {
+      // Step 1: Submit generation job to AI Horde (free, no key needed)
+      const submitRes = await fetch('https://stablehorde.net/api/v2/generate/async', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': '0000000000', // Anonymous key
+        },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          params: { width: 512, height: 768, steps: 20, n: 1, sampler_name: 'k_euler_a' },
+          nsfw: false,
+          models: ['stable_diffusion']
+        })
+      });
 
-    setPreview(pollinationsUrl);
+      if (!submitRes.ok) throw new Error('Submit failed');
+      const { id } = await submitRes.json();
+
+      // Step 2: Poll until done (every 5 seconds)
+      let imageUrl = null;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await new Promise(r => setTimeout(r, 5000));
+        const checkRes = await fetch(`https://stablehorde.net/api/v2/generate/check/${id}`);
+        const checkData = await checkRes.json();
+        if (checkData.done) {
+          // Step 3: Get final result
+          const statusRes = await fetch(`https://stablehorde.net/api/v2/generate/status/${id}`);
+          const statusData = await statusRes.json();
+          imageUrl = statusData.generations?.[0]?.img;
+          break;
+        }
+      }
+
+      if (imageUrl) {
+        setPreview(imageUrl);
+        setHistory(prev => [{ url: imageUrl, promptText: prompt.trim() }, ...prev]);
+      } else {
+        alert('Image generation timed out. Please try again.');
+      }
+    } catch (err) {
+      console.error('AI generation error:', err);
+      alert('Image generation failed. Please try again.');
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
+  // Smart client-side prompt builder — no external API needed
+  const buildPrompt = (userText) => {
+    const styles = ['hyperrealistic photography', 'cinematic still', '8K ultra-detailed', 'award-winning photo', 'DSLR quality', 'editorial style'];
+    const lighting = ['golden hour lighting', 'soft diffused light', 'dramatic side lighting', 'natural window light', 'warm ambient glow', 'moody studio lighting'];
+    const moods = ['cozy and intimate', 'serene and peaceful', 'vibrant and energetic', 'dark and atmospheric', 'bright and airy', 'elegant and luxurious'];
+    const camera = ['shot on Sony A7R IV', 'shallow depth of field', 'bokeh background', 'wide angle lens', '85mm portrait lens', 'macro detail'];
+    const extras = ['highly detailed', 'sharp focus', 'professional color grading', 'trending on Pinterest', 'visually stunning', 'magazine quality'];
+    
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    
+    return `${userText}, ${pick(moods)}, ${pick(lighting)}, ${pick(styles)}, ${pick(camera)}, ${pick(extras)}`;
   };
 
   const handleChatSubmit = async (e) => {
@@ -44,16 +98,12 @@ export default function AIPortal({ isOpen, onClose }) {
     setChatInput('');
     setLoadingChat(true);
 
-    try {
-      const encodedPrompt = encodeURIComponent(`You are a creative Assistant for a Pinterest clone called Inspira. Generate a short, highly descriptive image prompt based on this request: "${userText}". Only respond with the image prompt itself, nothing else.`);
-      const res = await fetch(`https://text.pollinations.ai/${encodedPrompt}`);
-      const text = await res.text();
-      setChatMessages(prev => [...prev, { role: 'assistant', text: text }]);
-    } catch (err) {
-      setChatMessages(prev => [...prev, { role: 'assistant', text: "Sorry, my creative gears are jammed right now!" }]);
-    } finally {
-      setLoadingChat(false);
-    }
+    // Small delay for UX feel
+    await new Promise(r => setTimeout(r, 600));
+    
+    const generated = buildPrompt(userText);
+    setChatMessages(prev => [...prev, { role: 'assistant', text: generated }]);
+    setLoadingChat(false);
   };
 
   const useAsPrompt = (text) => setPrompt(text);
@@ -67,6 +117,11 @@ export default function AIPortal({ isOpen, onClose }) {
       onClose();
       // Pass the generated image to Add page or just navigate there
       navigate('/add', { state: { generatedUrl: preview, generatedTitle: prompt } });
+  };
+
+  const handleRestoreHistory = (item) => {
+      setPreview(item.url);
+      setPrompt(item.promptText);
   };
 
   if (!isOpen) return null;
@@ -119,42 +174,78 @@ export default function AIPortal({ isOpen, onClose }) {
                           </button>
                       </form>
                   </div>
+                  
+                  {/* Idea History Ribbon */}
+                  {history.length > 0 && (
+                      <div className="mt-4 bg-zinc-800/50 rounded-2xl p-4 border border-zinc-700/30">
+                          <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-3"><i className="ri-history-line"></i> Session History</p>
+                          <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                              {history.map((item, idx) => (
+                                  <div 
+                                      key={idx} 
+                                      onClick={() => handleRestoreHistory(item)}
+                                      className="min-w-[80px] w-[80px] h-[80px] rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-red-500 transition-all flex-shrink-0 group relative"
+                                      title={item.promptText}
+                                  >
+                                      <img src={item.url} className="w-full h-full object-cover group-hover:brightness-75 transition-all" alt="history preview" />
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <i className="ri-refresh-line text-white/80 text-xl drop-shadow-lg"></i>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  )}
               </div>
 
               {/* Right: AI Output Preview */}
               <div className="flex-1 bg-zinc-800 rounded-2xl flex flex-col items-center justify-center min-h-[300px] border border-zinc-700 relative overflow-hidden group w-full max-w-[400px]">
-                  {preview ? (
-                      <>
-                          <img 
-                            src={preview} 
-                            className="w-full h-full object-cover animate-fade-in" 
-                            alt="Generated" 
-                            onLoad={() => setLoadingAi(false)}
-                            onError={() => { setLoadingAi(false); alert("Failed to fetch image. Please try again."); }}
-                          />
-                          <button onClick={clearImage} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-md transition-colors shadow-lg cursor-pointer"><i className="ri-close-line"></i></button>
-                          
-                          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={handlePublish} className="w-full max-w-[250px] bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full shadow-xl transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-                                  <i className="ri-save-line"></i> Publish to Feed
-                              </button>
-                          </div>
-                      </>
-                  ) : (
-                      <div className="text-center p-6 flex flex-col items-center justify-center h-full">
-                          {loadingAi ? (
-                              <>
-                                <i className="ri-loader-4-line text-5xl animate-spin text-red-500 mb-4"></i>
-                                <p className="text-zinc-400 font-medium animate-pulse">Painting your masterpiece...</p>
-                              </>
-                          ) : (
-                              <>
-                                <i className="ri-image-add-line text-5xl text-zinc-600 mb-4 block group-hover:text-zinc-500 transition-colors"></i>
-                                <p className="text-zinc-500 font-medium text-sm">Your creation will appear here</p>
-                              </>
-                          )}
-                      </div>
-                  )}
+                {/* Loading spinner overlay — displayed on top while waiting for Pollinations */}
+                {loadingAi && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-800 z-10 rounded-2xl">
+                    <i className="ri-loader-4-line text-5xl animate-spin text-red-500 mb-4"></i>
+                    <p className="text-zinc-400 font-medium text-sm text-center px-4">Painting your masterpiece...</p>
+                    <p className="text-zinc-600 text-xs mt-1">This may take 20–60 seconds</p>
+                  </div>
+                )}
+
+                {/* Image — shown once URL is set (loads in background) */}
+                {preview && (
+                  <img 
+                    src={preview}
+                    className="w-full h-full object-cover"
+                    alt="Generated"
+                    onLoad={() => {
+                      setLoadingAi(false);
+                      setHistory(prev => {
+                        if (prev.length === 0 || prev[0].url !== preview) {
+                          return [{ url: preview, promptText: prompt }, ...prev];
+                        }
+                        return prev;
+                      });
+                    }}
+                  />
+                )}
+
+                {/* Empty state */}
+                {!preview && !loadingAi && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                    <i className="ri-image-add-line text-5xl text-zinc-600 mb-4 block"></i>
+                    <p className="text-zinc-500 font-medium text-sm">Your creation will appear here</p>
+                  </div>
+                )}
+
+                {/* Action buttons — only when image loaded */}
+                {preview && !loadingAi && (
+                  <>
+                    <button onClick={clearImage} className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-md transition-colors shadow-lg cursor-pointer z-20"><i className="ri-close-line"></i></button>
+                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      <button onClick={handlePublish} className="w-full max-w-[250px] bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full shadow-xl transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                        <i className="ri-save-line"></i> Publish to Feed
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
           </div>
       </div>

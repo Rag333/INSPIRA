@@ -1,88 +1,169 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import ThreeBackground from '../components/ThreeBackground';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const themes = [
+  "Interior Design", "Luxe Interiors", "Japandi Style", "Minimalist Haven", "Cozy Living",
+  "Boho Chic", "Urban Loft", "Nordic Space", "Mountain Vista", "Alpine Peaks",
+  "Misty Forest", "Ocean Waves", "Desert Dunes", "Golden Hour", "Wildflower Field",
+  "City Skyline", "Urban Glow", "Tokyo Lights", "Glass Tower", "Gourmet Plate",
+  "Healthy Bowl", "Coffee Ritual", "Pizza Night", "Street Style", "Runway Mood",
+  "Vintage Lookbook", "Boho Fashion", "Dark Aesthetic", "Paris Dreams", "Santorini Vibes",
+  "Bali Escape", "Beach Bliss", "Amalfi Coast", "Kyoto Garden", "Venice Canals",
+  "Color Theory", "Abstract Strokes", "Pop Art Mood", "Neon Palette", "Gym Life",
+  "Yoga Peace", "Sunrise Run", "Dev Desk", "Minimal Setup", "Gaming Setup",
+  "Puppy Love", "Cat Nap", "Wildlife Gaze", "Plant Parent", "Succulent Garden",
+  "Tropical Leaf", "Monstera Love", "Starry Night", "Aurora Borealis", "Milky Way",
+  "Concert Energy", "Vinyl Records", "Guitar Solo", "Festival Glow", "Books & Coffee",
+  "Morning Spread", "Study Aesthetic", "Reading Nook", "Dark Academia", "Warm Scandi",
+  "Industrial Vibe", "Terracotta Mood", "Flat Lay Goals", "Watercolor Sketch", "DIY Candles",
+  "Fresh Herbs", "Botanical Print", "Purple Horizon", "Cloudy Drama", "Golden Dusk",
+  "Cozy Knits", "Chic Layers", "Luxury Wear", "Casual Friday", "Tropical Vibes",
+  "Geometric Play", "Pastel Art", "Ink Art", "Artisan Bread", "Table Setting",
+  "Waffle Dreams", "Cake Art", "Sushi Art", "Açaí Bowl", "Healthy Living",
+  "Night City", "Rainy Mood", "Foggy Morning", "Cherry Blossom", "Autumn Leaves",
+  "Winter Silence", "Spring Fresh", "Summer Lazy", "Lofi Vibes", "Aesthetic Room",
+];
+
+// Generate 500 unique images using Picsum seed-based URLs (guaranteed unique, always load)
+function buildImagePool() {
+  const pool = [];
+  for (let seed = 10; seed < 510; seed++) {
+    const isTall = seed % 3 === 0;
+    const theme = themes[seed % themes.length];
+    pool.push({
+      id: `picsum-${seed}`,
+      url: `https://picsum.photos/seed/${seed}/400/${isTall ? 600 : 450}`,
+      author: theme,
+      tall: isTall,
+    });
+  }
+  // Shuffle once
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool;
+}
+
+const IMAGE_POOL = buildImagePool();
+const PAGE_SIZE = 40;
 
 export default function Home() {
   const [images, setImages] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [savingIds, setSavingIds] = useState(new Set()); // currently saving
+  const [savedIds, setSavedIds]   = useState(new Set()); // already saved
   const observerRef = useRef();
+  const navigate = useNavigate();
 
-  // --- Image Feed Logic ---
-  const fetchImages = async (pageNumber) => {
-    setLoading(true);
+  const handleSave = async (imgObj) => {
+    if (savingIds.has(imgObj.id) || savedIds.has(imgObj.id)) return;
+    setSavingIds(prev => new Set(prev).add(imgObj.id));
     try {
-      const curatedDeck = [
-        { id: `a-${pageNumber}`, url: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400&auto=format&fit=crop&q=80", author: "Sarah Modern", tall: true },
-        { id: `b-${pageNumber}`, url: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=400&auto=format&fit=crop&q=80", author: "Luxe Interiors", tall: false },
-        { id: `c-${pageNumber}`, url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80", author: "Japandi Style", tall: true },
-        { id: `d-${pageNumber}`, url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=400&auto=format&fit=crop&q=80", author: "Minimalist Haven", tall: false },
-        { id: `e-${pageNumber}`, url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80", author: "Cozy Living", tall: false },
-        { id: `f-${pageNumber}`, url: "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=400&auto=format&fit=crop&q=80", author: "Boho Chic", tall: true },
-        { id: `g-${pageNumber}`, url: "https://images.unsplash.com/photo-1618220179428-22790b46a0eb?w=400&auto=format&fit=crop&q=80", author: "Urban Loft", tall: false },
-        { id: `h-${pageNumber}`, url: "https://images.unsplash.com/photo-1600607686527-6fb886090705?w=400&auto=format&fit=crop&q=80", author: "Nordic Space", tall: true },
-        { id: `i-${pageNumber}`, url: "https://images.unsplash.com/photo-1615529182904-14819c35db37?w=400&auto=format&fit=crop&q=80", author: "Midcentury Retro", tall: false },
-        { id: `j-${pageNumber}`, url: "https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=400&auto=format&fit=crop&q=80", author: "Studio Setup", tall: false },
-        { id: `k-${pageNumber}`, url: "https://images.unsplash.com/photo-1560184897-ae75f418493e?w=400&auto=format&fit=crop&q=80", author: "Modern Kitchen", tall: true },
-        { id: `l-${pageNumber}`, url: "https://images.unsplash.com/photo-1615873968403-89e068629265?w=400&auto=format&fit=crop&q=80", author: "Dark Academia", tall: false },
-        { id: `m-${pageNumber}`, url: "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=400&auto=format&fit=crop&q=80", author: "Warm Scandinavian", tall: true },
-        { id: `n-${pageNumber}`, url: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=400&auto=format&fit=crop&q=80", author: "Industrial Vibe", tall: false },
-        { id: `o-${pageNumber}`, url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&auto=format&fit=crop&q=80", author: "Pastel Dream", tall: true },
-        { id: `p-${pageNumber}`, url: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=400&auto=format&fit=crop&q=80", author: "Vintage Room", tall: false },
-      ];
-      const shuffled = [...curatedDeck].sort(() => 0.5 - Math.random());
-      setImages(prev => [...prev, ...shuffled]);
-    } catch (error) {
-      console.error('Error fetching images:', error);
+      // Step 1: download + create a Post record from the external URL
+      const createRes = await axios.post('/createpost/ai', {
+        title: imgObj.author,
+        description: imgObj.author,
+        imageUrl: imgObj.url,
+      });
+      if (createRes.data.success) {
+        // Step 2: save that post to the user's savedPosts
+        await axios.post(`/save/${createRes.data.post._id}`);
+        setSavedIds(prev => new Set(prev).add(imgObj.id));
+      }
+    } catch (err) {
+      if (err.response?.status === 401) navigate('/login');
+      else alert('Could not save image. Please try again.');
     } finally {
-      setLoading(false);
+      setSavingIds(prev => { const n = new Set(prev); n.delete(imgObj.id); return n; });
     }
   };
 
+  const loadMore = useCallback(() => {
+    if (loading) return;
+    setLoading(true);
+    const start = page * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const chunk = IMAGE_POOL.slice(start, end);
+    if (chunk.length > 0) {
+      setImages(prev => [...prev, ...chunk]);
+      setPage(prev => prev + 1);
+    }
+    setLoading(false);
+  }, [page, loading]);
+
   // Initial load
   useEffect(() => {
-    fetchImages(page);
-  }, [page]);
+    loadMore();
+  }, []);
 
-  // Infinite Scroll Intersection Observer Node Callback
   const sentinelRef = useCallback(node => {
-    if (loading) return;
     if (observerRef.current) observerRef.current.disconnect();
-    
     observerRef.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
-        setPage(prevPage => prevPage + 1);
+        loadMore();
       }
     });
-
     if (node) observerRef.current.observe(node);
-  }, [loading]);
+  }, [loadMore]);
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Hero / Headline */}
-      <div className="w-full flex justify-center mt-12 mb-8 px-4">
-          <div className="text-center max-w-2xl">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 animate-fade-in-up">Get your next</h1>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-red-500 mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>home decor idea</h1>
+      {/* Hero / Headline with 3D Background */}
+      <div className="w-full flex flex-col items-center justify-center px-4 relative overflow-hidden"
+        style={{ minHeight: '280px', background: '#ffffff' }}
+      >
+          <ThreeBackground />
+          <div className="text-center max-w-3xl relative z-10 py-10">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-3 animate-fade-in-up">
+                Discover &amp; create
+              </h1>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 animate-fade-in-up"
+                style={{
+                  animationDelay: '0.1s',
+                  background: 'linear-gradient(90deg, #ef4444, #f97316, #a855f7)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                your next obsession
+              </h1>
+              <p className="text-gray-400 text-base md:text-lg" style={{ animationDelay: '0.2s' }}>
+                A universe of ideas, art &amp; aesthetics — all in one place.
+              </p>
           </div>
       </div>
 
       {/* Main Content Grid */}
       <main className="w-full max-w-[2000px] mx-auto px-4 sm:px-6 py-4 mb-20 font-sans">
           <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-4">
-              
               {images.map((imgObj, i) => (
-                <div key={`${imgObj.id}-${i}`} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-200 min-h-[200px]">
+                <div key={`${imgObj.id}-${i}`} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-200">
                     <img 
                       src={imgObj.url} 
-                      className="w-full h-auto block object-cover rounded-2xl group-hover:brightness-75 transition-all duration-500" 
+                      className="w-full block object-cover rounded-2xl group-hover:brightness-75 transition-all duration-500" 
                       loading="lazy" 
-                      alt={`Inspiration by ${imgObj.author}`} 
+                      alt={imgObj.author}
+                      style={{ aspectRatio: imgObj.tall ? '2/3' : '4/3' }}
                     />
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4 bg-black/20">
                         <div className="flex justify-end">
-                            <button className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95">Save</button>
+                            {savedIds.has(imgObj.id) ? (
+                              <span className="bg-black text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg flex items-center gap-1">
+                                <i className="ri-checkbox-circle-fill text-green-400"></i> Saved
+                              </span>
+                            ) : savingIds.has(imgObj.id) ? (
+                              <span className="bg-red-600 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg flex items-center gap-1">
+                                <i className="ri-loader-4-line animate-spin"></i> Saving…
+                              </span>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSave(imgObj); }}
+                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg transition-transform active:scale-95 cursor-pointer"
+                              >Save</button>
+                            )}
                         </div>
                         <div className="mt-auto">
                             <p className="text-white text-xs font-medium tracking-wide drop-shadow-md truncate">{imgObj.author}</p>
@@ -90,7 +171,6 @@ export default function Home() {
                     </div>
                 </div>
               ))}
-
           </div>
 
           {/* Infinite Scroll Sentinel */}
