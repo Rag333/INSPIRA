@@ -8,24 +8,64 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // OTP States
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState('');
+  
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
 
+  // Step 1: Request OTP
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+    
+    // First, let's send the OTP
     try {
-      const res = await axios.post('/register', { fullname, username, email, password });
+      const res = await axios.post('/send-otp', { email });
       if (res.data.success) {
-        navigate('/profile');
+        setShowOtpInput(true);
+        setSuccessMsg('OTP sent to your email. Please check your inbox.');
+        if (res.data.previewUrl) setPreviewUrl(res.data.previewUrl);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Failed to send OTP. Please check your email and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP and ultimately Register
+  const handleVerifyAndRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Very OTP
+      const verifyRes = await axios.post('/verify-otp', { email, otp });
+      
+      if (verifyRes.data.success) {
+        // If OTP is good, proceed with actual registration
+        const registerRes = await axios.post('/register', { fullname, username, email, password });
+        if (registerRes.data.success) {
+          navigate('/profile');
+        }
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid OTP or Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   const loginWithGoogle = () => {
-    window.location.href = 'http://localhost:3000/auth/google';
+    window.location.href = 'http://localhost:3000/auth/google'; // Re-add if passport Google OAuth is re-enabled, else hide
   };
 
   return (
@@ -48,39 +88,76 @@ export default function Register() {
         </div>
 
         {/* Form Side */}
-        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative">
+          
           <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white font-bold italic mx-auto mb-6 text-2xl shadow-md">I</div>
           
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Welcome to Inspira</h2>
           <p className="text-center text-gray-500 mb-8 text-sm">Find new ideas to try</p>
 
-          {error && <div className="mb-4 text-center text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>}
+          {error && <div className="mb-4 text-center text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{error}</div>}
+          {successMsg && <div className="mb-4 text-center text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-200">{successMsg}</div>}
 
-          <form onSubmit={handleRegister} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Full Name</label>
-              <input type="text" value={fullname} onChange={e => setFullname(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="e.g. Jane Doe" required />
-            </div>
+          {!showOtpInput ? (
+            <form onSubmit={handleRegister} className="flex flex-col gap-4 animate-fade-in-up">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Full Name</label>
+                <input type="text" value={fullname} onChange={e => setFullname(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="e.g. Jane Doe" required />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Username</label>
-              <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Choose a username" required />
-            </div> 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Username</label>
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Choose a username" required />
+              </div> 
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a password" required />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a password" required />
+              </div>
 
-            <button type="submit" className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-colors shadow-md mt-4">Continue</button>
-          </form>
+              <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-all shadow-md mt-4 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70">
+                {loading ? <i className="ri-loader-4-line animate-spin text-xl"></i> : 'Continue'}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAndRegister} className="flex flex-col gap-5 animate-fade-in-up">
+                <div className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
+                   <p className="text-gray-600 text-sm font-medium">Verify your email address <span className="text-red-600 mx-1">{email}</span></p>
+                   {previewUrl && (
+                      <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-block mt-3 px-4 py-2 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 text-xs font-bold rounded-lg transition-colors">
+                        <i className="ri-mail-open-line mr-1"></i> Open Test Inbox (Dev Mode)
+                      </a>
+                   )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 flex justify-between">
+                    <span>Enter 6-digit OTP</span>
+                    <button type="button" onClick={() => setShowOtpInput(false)} className="text-red-500 text-xs hover:underline cursor-pointer font-semibold">Change Info</button>
+                  </label>
+                  <input 
+                    type="text" 
+                    value={otp} 
+                    onChange={e => setOtp(e.target.value)} 
+                    maxLength={6}
+                    className="w-full bg-white border-2 border-gray-200 px-4 py-4 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-2xl tracking-widest text-center font-bold text-gray-900 placeholder-gray-300" 
+                    placeholder="------" 
+                    required 
+                  />
+                </div>
 
-          <div className="mt-8 relative flex items-center justify-center">
+                <button type="submit" disabled={loading || otp.length < 6} className="w-full bg-red-600 text-white font-bold py-4 px-4 rounded-full hover:bg-red-700 transition-colors shadow-md mt-2 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                  {loading ? <i className="ri-loader-4-line animate-spin text-xl"></i> : 'Verify & Setup Account'}
+                </button>
+            </form>
+          )}
+
+          {/* <div className="mt-8 relative flex items-center justify-center">
             <hr className="w-full border-gray-200" />
             <span className="absolute bg-white px-4 text-sm text-gray-500 font-medium">OR</span>
           </div>
@@ -89,7 +166,7 @@ export default function Register() {
             <button type="button" onClick={loginWithGoogle} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-full hover:bg-gray-50 transition-colors cursor-pointer">
               <i className="ri-google-fill text-xl text-red-500"></i> Continue with Google
             </button>
-          </div>
+          </div> */}
 
           <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed px-4">
             By continuing, you agree to Inspira's <a href="#" className="font-bold text-gray-700">Terms of Service</a> and acknowledge you've read our <a href="#" className="font-bold text-gray-700">Privacy Policy</a>

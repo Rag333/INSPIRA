@@ -1,0 +1,216 @@
+const Post = require('../models/Post');
+const User = require('../models/User');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+// @desc    Get feed
+// @route   GET /feed
+const getFeed = async (req, res, next) => {
+  try {
+    const userObj = req.user; // Provided by isLoggedIn middleware
+    let likedPostIds = [];
+
+    const mongoose = require('mongoose');
+    // 1. Build Base Query - Exclude logged-in user's posts
+    let query = { user: { $ne: new mongoose.Types.ObjectId(userObj._id) } };
+
+    // 2. Add search parameters if present
+    const q = req.query.q;
+    if (q) {
+      query = {
+        $and: [
+          { user: { $ne: new mongoose.Types.ObjectId(userObj._id) } },
+          {
+            $or: [
+              { title: { $regex: q, $options: 'i' } },
+              { description: { $regex: q, $options: 'i' } },
+              { tags: { $regex: q, $options: 'i' } }
+            ]
+          }
+        ]
+      };
+    }
+
+    // 3. Execute Query
+    const posts = await Post.find(query)
+      .populate('user', 'username profileImage')
+      .sort({ createdAt: -1 });
+
+    const fallbacks = [
+      'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600',
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600',
+      'https://images.unsplash.com/photo-1505691938895-1758d7def511?w=600'
+    ];
+
+    // 4. Determine Liked Posts
+    if (posts.length > 0) {
+      const postIds = posts.map(p => p._id);
+      const likedPosts = await Post.find({ _id: { $in: postIds }, likes: userObj._id }, '_id');
+      likedPostIds = likedPosts.map(p => p._id.toString());
+    }
+
+    const formattedPosts = posts.map(p => ({
+      ...p.toObject(),
+      likesCount: (p.likes || []).length
+    }));
+
+    res.status(200).json({
+      success: true,
+      posts: formattedPosts,
+      fallbacks,
+      user: { 
+        _id: userObj._id, 
+        id: userObj._id, 
+        username: userObj.username, 
+        savedPosts: userObj.savedPosts 
+      },
+      likedPostIds
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create a new post with uploaded image
+// @route   POST /createpost
+const createPost = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Please upload an image' });
+    }
+
+    const { title, description } = req.body;
+
+    const newPost = await Post.create({
+      user: req.user.id,
+      title,
+      description,
+      image: req.file.filename,
+      isAIGenerated: false
+    });
+
+    // Add to user posts array
+    req.user.posts.push(newPost._id);
+    await req.user.save();
+
+    res.status(201).json({ success: true, post: newPost });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Generate AI image (Mock) and save as post
+// @route   POST /createpost/ai
+const createAIPost = async (req, res, next) => {
+  try {
+    const { title, description, imageUrl } = req.body;
+    
+    if (!imageUrl) {
+      return res.status(400).json({ success: false, message: 'Please provide imageUrl' });
+    }
+
+    // The frontend sends an external URL (Picsum). We must download it so Feed.jsx works locally!
+    let filename = '';
+    try {
+      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+      const buffer = Buffer.from(response.data, 'binary');
+      filename = `ai-${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`;
+      const filepath = path.join(__dirname, '../public/images/uploads', filename);
+      fs.writeFileSync(filepath, buffer);
+    } catch (downloadErr) {
+       console.error("Failed to download image, saving url directly", downloadErr);
+       filename = imageUrl; // Fallback, though Feed.jsx might fail to render it properly
+    }
+
+    const newPost = await Post.create({
+      user: req.user.id,
+      title: title || 'AI Image',
+      description,
+      image: filename,
+      isAIGenerated: true
+    });
+
+    // Add to user posts array
+    req.user.posts.push(newPost._id);
+    await req.user.save();
+
+    res.status(201).json({ success: true, post: newPost });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Like / Unlike a post
+// @route   POST /like/:id
+const toggleLike = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    const likedIndex = post.likes.indexOf(req.user.id);
+    let action = 'unliked';
+
+    if (likedIndex > -1) {
+      post.likes.splice(likedIndex, 1);
+    } else {
+      post.likes.push(req.user.id);
+      action = 'liked';
+    }
+
+    await post.save();
+
+    // Create Notification if liked (and not liking own post)
+    if (action === 'liked' && post.user.toString() !== req.user.id.toString()) {
+      const Notification = require('../models/Notification');
+      await Notification.create({
+        recipient: post.user,
+        likerProfileImage: req.user.profileImage,
+        likerUsername: req.user.username,
+        postImage: post.image,
+        type: 'like'
+      });
+    }
+
+    res.status(200).json({ success: true, likesCount: post.likes.length });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete post
+// @route   DELETE /post/:id
+const deletePost = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+
+    if (post.user.toString() !== req.user.id.toString()) {
+       return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await post.deleteOne();
+
+    // Remove from user posts
+    req.user.posts.pull(post._id);
+    await req.user.save();
+
+    res.status(200).json({ success: true, message: 'Post deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getFeed,
+  createPost,
+  createAIPost,
+  toggleLike,
+  deletePost
+};

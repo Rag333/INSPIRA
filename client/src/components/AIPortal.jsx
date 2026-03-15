@@ -32,65 +32,28 @@ export default function AIPortal({ isOpen, onClose }) {
     setPreview("");
 
     try {
-      // Step 1: Submit generation job to AI Horde (free, no key needed)
-      const submitRes = await fetch(
-        "https://stablehorde.net/api/v2/generate/async",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: "0000000000", // Anonymous key
-          },
-          body: JSON.stringify({
-            prompt: prompt.trim(),
-            params: {
-              width: 512,
-              height: 768,
-              steps: 20,
-              n: 1,
-              sampler_name: "k_euler_a",
-            },
-            nsfw: false,
-            models: ["stable_diffusion"],
-          }),
-        },
-      );
-
-      if (!submitRes.ok) throw new Error("Submit failed");
-      const { id } = await submitRes.json();
-
-      // Step 2: Poll until done (every 5 seconds)
-      let imageUrl = null;
-      for (let attempt = 0; attempt < 30; attempt++) {
-        await new Promise((r) => setTimeout(r, 5000));
-        const checkRes = await fetch(
-          `https://stablehorde.net/api/v2/generate/check/${id}`,
-        );
-        const checkData = await checkRes.json();
-        if (checkData.done) {
-          // Step 3: Get final result
-          const statusRes = await fetch(
-            `https://stablehorde.net/api/v2/generate/status/${id}`,
-          );
-          const statusData = await statusRes.json();
-          imageUrl = statusData.generations?.[0]?.img;
-          break;
-        }
-      }
-
-      if (imageUrl) {
+      const encodedPrompt = encodeURIComponent(prompt.trim() + " highly detailed, 8k resolution, masterpiece");
+      const randomSeed = Math.floor(Math.random() * 1000000);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${randomSeed}&width=512&height=768&nologo=true`;
+      
+      const img = new Image();
+      img.onload = () => {
         setPreview(imageUrl);
         setHistory((prev) => [
           { url: imageUrl, promptText: prompt.trim() },
           ...prev,
         ]);
-      } else {
-        alert("Image generation timed out. Please try again.");
-      }
+        setLoadingAi(false);
+      };
+      img.onerror = () => {
+        alert("Image generation failed. Please try again.");
+        setLoadingAi(false);
+      };
+      img.src = imageUrl;
+
     } catch (err) {
       console.error("AI generation error:", err);
       alert("Image generation failed. Please try again.");
-    } finally {
       setLoadingAi(false);
     }
   };

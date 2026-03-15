@@ -61,16 +61,20 @@ export default function Navbar({ onOpenAI }) {
         )}
 
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button 
-             onClick={onOpenAI}
-             className="px-4 py-2 text-sm font-bold rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md cursor-pointer flex items-center gap-1 transition-opacity"
-          >
-             <i className="ri-magic-line"></i> AI Magic
-          </button>
-          
-          <Link to="/feed" className="px-4 py-2 text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors text-gray-700">Explore</Link>
-          
-          {user && <NotificationBell />}
+          {user && (
+            <>
+              <button 
+                 onClick={onOpenAI}
+                 className="px-4 py-2 text-sm font-bold rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md cursor-pointer flex items-center gap-1 transition-opacity"
+              >
+                 <i className="ri-magic-line"></i> AI Magic
+              </button>
+              
+              <Link to="/feed" className="px-4 py-2 text-sm font-semibold rounded-full hover:bg-gray-100 transition-colors text-gray-700">Explore</Link>
+              
+              <NotificationBell />
+            </>
+          )}
           
           {user ? (
             <div className="relative" ref={dropdownRef}>
