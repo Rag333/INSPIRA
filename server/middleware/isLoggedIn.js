@@ -21,6 +21,8 @@ const isLoggedIn = async (req, res, next) => {
 
     if (!token) {
       console.log('DEBUG: Auth failed - No session or token found');
+      console.log('DEBUG: Headers:', req.headers);
+      console.log('DEBUG: Cookies:', req.cookies);
       return res.status(401).json({ success: false, message: 'Not authorized to access this route. No session or token provided.' });
     }
 

@@ -1,6 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const dns = require('dns');
+
+// Force Node to prefer IPv4 over IPv6. 
+// This fixes ENETUNREACH errors when connecting to Gmail/SMTP on cloud providers like Render.
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
