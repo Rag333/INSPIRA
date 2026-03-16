@@ -8,7 +8,6 @@ const sendTokenResponse = (user, statusCode, res, message) => {
   const options = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     httpOnly: true,
-    httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production'
   };
@@ -96,7 +95,6 @@ const logoutUser = (req, res, next) => {
     const options = {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
-      httpOnly: true,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production'
     };
@@ -115,6 +113,12 @@ const sendOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    // Check if user already exists to prevent sending OTP for no reason
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+        return res.status(400).json({ success: false, message: 'User already exists with this email. Please log in.' });
+    }
     
     const otp = generateOTP();
     await OTP.create({ email, otp });

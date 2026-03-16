@@ -160,7 +160,7 @@ export default function Register() {
             </form>
           )}
 
-          {/* <div className="mt-8 relative flex items-center justify-center">
+          <div className="mt-8 relative flex items-center justify-center">
             <hr className="w-full border-gray-200" />
             <span className="absolute bg-white px-4 text-sm text-gray-500 font-medium">OR</span>
           </div>
@@ -169,7 +169,7 @@ export default function Register() {
             <button type="button" onClick={loginWithGoogle} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-full hover:bg-gray-50 transition-colors cursor-pointer">
               <i className="ri-google-fill text-xl text-red-500"></i> Continue with Google
             </button>
-          </div> */}
+          </div>
 
           <p className="mt-6 text-center text-xs text-gray-500 leading-relaxed px-4">
             By continuing, you agree to Inspira's <a href="#" className="font-bold text-gray-700">Terms of Service</a> and acknowledge you've read our <a href="#" className="font-bold text-gray-700">Privacy Policy</a>

@@ -7,16 +7,16 @@ const initTransporter = async () => {
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      // Force IPv4 as some cloud providers have IPv6 connectivity issues with Gmail
-      family: 4,
-      connectionTimeout: 15000,
-      greetingTimeout: 15000
+      requireTLS: true,
+      tls: {
+          rejectUnauthorized: false
+      }
     });
   } else {
     // Generate a temporary Ethereal account for testing
