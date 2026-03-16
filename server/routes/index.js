@@ -7,8 +7,6 @@ const post = require('../controllers/postController');
 const isLoggedIn = require('../middleware/isLoggedIn');
 const upload = require('../middleware/multer');
 
-// Basic health check/root route
-router.get('/', (req, res) => res.json({ message: 'Inspira Backend is running!' }));
 
 // Standard Authentication
 router.post('/register', auth.registerUser);

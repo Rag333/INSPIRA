@@ -7,6 +7,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
+const passport = require('passport');
 
 // Connect to Database
 const connectDB = require('./config/db');
@@ -70,8 +72,26 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'inspira-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
+}));
 
-// Mount Routes directly on root to match client requests
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Robust Health Check (Directly on app to avoid router mounting issues)
+app.get('/health', (req, res) => res.json({ status: 'ok', environment: process.env.NODE_ENV }));
+app.get('/', (req, res) => res.json({ message: 'Inspira Backend is running!' }));
+
+// Mount Routes
 app.use('/', routes);
 
 
