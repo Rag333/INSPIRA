@@ -50,6 +50,8 @@ function buildImagePool() {
 const IMAGE_POOL = buildImagePool();
 const PAGE_SIZE = 40;
 
+import { useAuth } from '../context/AuthContext';
+
 export default function Home() {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(0);
@@ -58,6 +60,12 @@ export default function Home() {
   const [savedIds, setSavedIds]   = useState(new Set()); // already saved
   const observerRef = useRef();
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
+
+  // Redirect to feed if already logged in
+  useEffect(() => {
+    if (user) navigate('/feed');
+  }, [user, navigate]);
 
   const handleSave = async (imgObj) => {
     if (savingIds.has(imgObj.id) || savedIds.has(imgObj.id)) return;
@@ -71,8 +79,11 @@ export default function Home() {
       });
       if (createRes.data.success) {
         // Step 2: save that post to the user's savedPosts
-        await axios.post(`/save/${createRes.data.post._id}`);
-        setSavedIds(prev => new Set(prev).add(imgObj.id));
+        const saveRes = await axios.post(`/save/${createRes.data.post._id}`);
+        if (saveRes.data.success) {
+           setUser(saveRes.data.user);
+           setSavedIds(prev => new Set(prev).add(imgObj.id));
+        }
       }
     } catch (err) {
       if (err.response?.status === 401) navigate('/login');
@@ -81,24 +92,6 @@ export default function Home() {
       setSavingIds(prev => { const n = new Set(prev); n.delete(imgObj.id); return n; });
     }
   };
-
-  const loadMore = useCallback(() => {
-    if (loading) return;
-    setLoading(true);
-    const start = page * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    const chunk = IMAGE_POOL.slice(start, end);
-    if (chunk.length > 0) {
-      setImages(prev => [...prev, ...chunk]);
-      setPage(prev => prev + 1);
-    }
-    setLoading(false);
-  }, [page, loading]);
-
-  // Initial load
-  useEffect(() => {
-    loadMore();
-  }, []);
 
   const sentinelRef = useCallback(node => {
     if (observerRef.current) observerRef.current.disconnect();

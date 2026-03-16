@@ -100,7 +100,12 @@ const createPost = async (req, res, next) => {
       $push: { posts: newPost._id }
     });
 
-    res.status(201).json({ success: true, post: newPost });
+    // Get updated user with populated arrays for frontend sync
+    const updatedUser = await User.findById(req.user.id)
+      .populate('posts')
+      .populate('savedPosts');
+
+    res.status(201).json({ success: true, post: newPost, user: updatedUser });
   } catch (error) {
     next(error);
   }
@@ -141,7 +146,12 @@ const createAIPost = async (req, res, next) => {
       $push: { posts: newPost._id }
     });
 
-    res.status(201).json({ success: true, post: newPost });
+    // Get updated user
+    const updatedUser = await User.findById(req.user.id)
+      .populate('posts')
+      .populate('savedPosts');
+
+    res.status(201).json({ success: true, post: newPost, user: updatedUser });
   } catch (error) {
     next(error);
   }

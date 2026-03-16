@@ -122,7 +122,10 @@ export default function Add() {
         const res = await axios.post('/createpost/ai', {
           title, description, imageUrl: aiUrl
         });
-        if (res.data.success) navigate('/profile');
+        if (res.data.success) {
+          setUser(res.data.user);
+          navigate('/profile');
+        }
       } else {
         // Standard File Upload
         const formData = new FormData();
@@ -131,7 +134,10 @@ export default function Add() {
         formData.append('description', description);
         
         const res = await axios.post('/createpost', formData);
-        if (res.data.success) navigate('/profile');
+        if (res.data.success) {
+          setUser(res.data.user);
+          navigate('/profile');
+        }
       }
     } catch (err) {
       alert((err.response?.data?.message || 'Error saving Pin') + ': ' + (err.response?.data?.error || err.message));
