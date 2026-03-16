@@ -85,14 +85,14 @@ export default function Navbar({ onOpenAI }) {
                 >
                     {user.profileImage ? (
                         <img 
-                          src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
+                          src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
                           className="w-full h-full object-cover" 
                           alt="Avatar"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.parentElement.innerHTML = `
                               <div class="w-full h-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                                ${user.username?.charAt(0).toUpperCase()}
+                                ${user.username ? user.username.charAt(0).toUpperCase() : '?'}
                               </div>
                             `;
                           }}

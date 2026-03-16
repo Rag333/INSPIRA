@@ -70,14 +70,14 @@ export default function UserProfile() {
           <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden bg-gray-200 shadow-md border-4 border-white mb-4">
             {user.profileImage ? (
               <img
-                src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`}
+                src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`}
                 className="w-full h-full object-cover"
                 alt={user.username}
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.parentElement.innerHTML = `
                     <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-400 to-pink-500 text-white text-4xl font-bold">
-                      ${user.username?.charAt(0).toUpperCase()}
+                      ${user.username ? user.username.charAt(0).toUpperCase() : '?'}
                     </div>
                   `;
                 }}

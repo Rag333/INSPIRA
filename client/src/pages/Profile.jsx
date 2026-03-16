@@ -36,7 +36,10 @@ export default function Profile() {
     try {
       const res = await axios.post('/uploadfile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       if (res.data.success) setUser(res.data.user);
-    } catch (err) { console.error('Failed to upload image', err); }
+    } catch (err) { 
+      console.error('Failed to upload image', err); 
+      alert(err.response?.data?.message || 'Failed to upload profile photo. Please ensure Cloudinary is configured.');
+    }
   };
 
   const handleUnsave = async (postId) => {
@@ -177,16 +180,15 @@ export default function Profile() {
           <div className="max-w-4xl mx-auto flex flex-col items-center">
               <div className="relative group cursor-pointer mb-4" onClick={() => fileInputRef.current?.click()}>
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-200 rounded-full overflow-hidden shadow-md border-4 border-white">
-                      {user.profileImage ? (
                           <img 
-                            src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
+                            src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
                             className="w-full h-full object-cover" 
                             alt="Profile"
                             onError={(e) => {
                               e.target.style.display = 'none';
                               e.target.parentElement.innerHTML = `
                                 <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white text-4xl font-bold">
-                                  ${user.username?.charAt(0).toUpperCase()}
+                                  ${user.username ? user.username.charAt(0).toUpperCase() : '?'}
                                 </div>
                               `;
                             }}

@@ -262,15 +262,14 @@ export default function Feed() {
                         <div className="relative w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center p-[2px] ring-2 ring-red-400/60 shadow-inner">
                           {elem.user?.profileImage ? (
                             <img 
-                              src={elem.user.profileImage.startsWith('http') ? elem.user.profileImage : `${BACKEND_URL}/images/uploads/${elem.user.profileImage}`} 
+                              src={elem.user?.profileImage?.startsWith('http') ? elem.user.profileImage : `${BACKEND_URL}/images/uploads/${elem.user?.profileImage}`} 
                               className="w-full h-full object-cover rounded-full" 
-                              alt={elem.user.username}
+                              alt={elem.user?.username}
                               onError={(e) => {
-                                // If image fails, clear it to trigger the initials fallback
                                 e.target.style.display = 'none';
                                 e.target.parentElement.innerHTML = `
                                   <div class="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
-                                    ${elem.user.username.charAt(0).toUpperCase()}
+                                    ${elem.user?.username ? elem.user.username.charAt(0).toUpperCase() : '?'}
                                   </div>
                                 `;
                               }}
