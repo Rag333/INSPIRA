@@ -46,7 +46,7 @@ export default function AIPortal({ isOpen, onClose }) {
         setLoadingAi(false);
       };
       img.onerror = () => {
-        alert("Image generation failed. Please try again.");
+        alert("Image generation failed (Network Error). Please try again.");
         setLoadingAi(false);
       };
       img.src = imageUrl;

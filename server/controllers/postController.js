@@ -207,15 +207,16 @@ const deletePost = async (req, res, next) => {
        return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    await post.deleteOne();
+    await Post.findByIdAndDelete(req.params.id);
 
-    // Remove from user posts
+    // Cleanup: Remove from user's posts array
     await User.findByIdAndUpdate(req.user.id, {
-      $pull: { posts: post._id }
-    }, { runValidators: false });
+      $pull: { posts: req.params.id }
+    });
 
-    res.status(200).json({ success: true, message: 'Post deleted' });
+    res.status(200).json({ success: true, message: 'Post deleted successfully' });
   } catch (error) {
+    console.error('Delete Post Error:', error);
     next(error);
   }
 };

@@ -51,8 +51,10 @@ export default function Feed() {
           setLikeCounts(prev => ({ ...prev, ...counts }));
         }
       } catch (err) {
-        if (err.response?.status === 401) navigate('/login');
         console.error('Feed Fetch Error:', err);
+        if (err.response?.status === 401) return navigate('/login');
+        // Subtle alert for feed fetch errors
+        console.error('Error details:', err.response?.data?.error || err.response?.data?.message);
       } finally {
         setLoading(false);
         setInitialLoad(false);
@@ -78,7 +80,10 @@ export default function Feed() {
     try {
       const res = await axios.post(`/save/${postId}`);
       if (res.data.success) setData(prev => ({ ...prev, user: res.data.user }));
-    } catch(err) { console.error('Failed to save', err); }
+    } catch(err) { 
+      console.error('Failed to save', err);
+      alert('Action failed: ' + (err.response?.data?.error || err.response?.data?.message || 'Check your connection'));
+    }
   };
 
   const handleLike = (id, isRealPost = false) => {

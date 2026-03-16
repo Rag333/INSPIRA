@@ -45,7 +45,7 @@ export default function ResetPassword() {
         setTimeout(() => navigate('/login'), 2000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid OTP or Reset failed');
+      alert('Failed: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }

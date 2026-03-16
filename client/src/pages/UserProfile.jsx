@@ -28,7 +28,7 @@ export default function UserProfile() {
         if (err.response?.status === 401) {
           navigate('/login');
         } else {
-          setError(err.response?.data?.message || 'Could not load profile.');
+          setError(err.response?.data?.error || err.response?.data?.message || 'Could not load profile.');
         }
       } finally {
         setLoading(false);

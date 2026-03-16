@@ -130,9 +130,7 @@ export default function Add() {
         formData.append('title', title);
         formData.append('description', description);
         
-        const res = await axios.post('/createpost', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const res = await axios.post('/createpost', formData);
         if (res.data.success) navigate('/profile');
       }
     } catch (err) {

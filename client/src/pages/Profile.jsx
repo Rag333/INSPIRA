@@ -34,7 +34,7 @@ export default function Profile() {
     const formData = new FormData();
     formData.append('image', file);
     try {
-      const res = await axios.post('/uploadfile', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post('/uploadfile', formData);
       if (res.data.success) setUser(res.data.user);
     } catch (err) { 
       console.error('Failed to upload image', err); 
