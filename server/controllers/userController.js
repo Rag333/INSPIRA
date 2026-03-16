@@ -41,7 +41,7 @@ const uploadProfileImage = async (req, res, next) => {
   console.log('DEBUG: uploadProfileImage hit');
   try {
     console.log('DEBUG: req.file:', req.file ? { path: req.file.path, fieldname: req.file.fieldname } : 'undefined');
-    console.log('DEBUG: req.user:', req.user ? { id: req.user.id, username: req.user.username } : 'undefined');
+    console.log('DEBUG: req.user:', req.user ? { id: req.user.id || req.user._id, username: req.user.username } : 'undefined');
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Please upload an image' });

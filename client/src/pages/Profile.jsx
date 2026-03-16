@@ -38,7 +38,7 @@ export default function Profile() {
       if (res.data.success) setUser(res.data.user);
     } catch (err) { 
       console.error('Failed to upload image', err); 
-      alert(err.response?.data?.message || 'Failed to upload profile photo. Please ensure Cloudinary is configured.');
+      alert('Upload failed: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
     }
   };
 
@@ -72,8 +72,10 @@ export default function Profile() {
     try {
       await axios.delete(`/post/${postId}`);
     } catch (err) {
-      console.error('Failed to delete', err);
-      // Restore on failure
+      console.error('Upload Error:', err);
+      alert('Upload failed: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
+    } finally {
+      // Restore on failure or refresh user data after successful delete
       const res = await axios.get('/profile');
       if (res.data.success) setUser(res.data.user);
     }

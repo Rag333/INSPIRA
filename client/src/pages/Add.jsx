@@ -136,7 +136,7 @@ export default function Add() {
         if (res.data.success) navigate('/profile');
       }
     } catch (err) {
-      alert('Error saving Pin: ' + (err.response?.data?.message || err.message));
+      alert('Error saving Pin: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }

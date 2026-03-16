@@ -78,11 +78,14 @@ const getFeed = async (req, res, next) => {
 // @route   POST /createpost
 const createPost = async (req, res, next) => {
   try {
+    console.log('DEBUG: createPost hit. User:', req.user.id);
     if (!req.file) {
+      console.log('DEBUG: createPost failed - No file provided');
       return res.status(400).json({ success: false, message: 'Please upload an image' });
     }
 
     const { title, description } = req.body;
+    console.log('DEBUG: req.file.path:', req.file.path);
 
     const newPost = await Post.create({
       user: req.user.id,
@@ -159,7 +162,7 @@ const toggleLike = async (req, res, next) => {
 
     const update = (likedIndex > -1) 
       ? { $pull: { likes: req.user.id } } 
-      : { $push: { likes: req.user.id } };
+      : { $addToSet: { likes: req.user.id } };
 
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.id,
@@ -170,6 +173,7 @@ const toggleLike = async (req, res, next) => {
     if (likedIndex === -1) {
       action = 'liked';
     }
+    console.log(`DEBUG: toggleLike action: ${action} for post ${req.params.id}`);
 
     // Create Notification if liked (and not liking own post)
     if (action === 'liked' && post.user.toString() !== req.user.id.toString()) {
