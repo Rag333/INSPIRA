@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Background3D from '../components/Background3D';
 import { BACKEND_URL } from '../config';
+import Tilt from 'react-parallax-tilt';
 
 export default function Feed() {
   const [data, setData] = useState({ posts: [], fallbacks: [] });
