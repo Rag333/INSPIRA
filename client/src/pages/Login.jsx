@@ -16,7 +16,7 @@ export default function Login() {
     try {
       const res = await axios.post('/login', { username, password });
       if (res.data.success) {
-        navigate('/profile');
+        navigate('/feed');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');

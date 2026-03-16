@@ -55,7 +55,7 @@ export default function Register() {
         // If OTP is good, proceed with actual registration
         const registerRes = await axios.post('/register', { fullname, username, email, password });
         if (registerRes.data.success) {
-          navigate('/profile');
+          navigate('/feed');
         }
       }
     } catch (err) {

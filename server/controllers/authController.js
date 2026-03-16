@@ -9,7 +9,7 @@ const sendTokenResponse = (user, statusCode, res, message) => {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production' && !res.req.hostname.includes('localhost')
   };
 
   res
@@ -96,7 +96,7 @@ const logoutUser = (req, res, next) => {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production' && !res.req.hostname.includes('localhost')
     };
     res.cookie('token', 'none', options);
     res.status(200).json({ success: true, message: 'Logged out successfully' });
