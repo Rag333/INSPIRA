@@ -102,23 +102,23 @@ export default function Register() {
           {!showOtpInput ? (
             <form onSubmit={handleRegister} className="flex flex-col gap-4 animate-fade-in-up">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Full Name</label>
-                <input type="text" value={fullname} onChange={e => setFullname(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="e.g. Jane Doe" required />
+                <label htmlFor="reg-fullname" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Full Name</label>
+                <input id="reg-fullname" name="fullname" type="text" value={fullname} onChange={e => setFullname(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="e.g. Jane Doe" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Username</label>
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Choose a username" required />
+                <label htmlFor="reg-username" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Username</label>
+                <input id="reg-username" name="username" type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Choose a username" required />
               </div> 
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
+                <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email</label>
+                <input id="reg-email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Password</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a password" required />
+                <label htmlFor="reg-password" name="password" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Password</label>
+                <input id="reg-password" name="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a password" required />
               </div>
 
               <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-all shadow-md mt-4 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70">
@@ -137,11 +137,13 @@ export default function Register() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 flex justify-between">
+                  <label htmlFor="reg-otp" className="block text-sm font-medium text-gray-700 mb-1 ml-1 flex justify-between">
                     <span>Enter 6-digit OTP</span>
                     <button type="button" onClick={() => setShowOtpInput(false)} className="text-red-500 text-xs hover:underline cursor-pointer font-semibold">Change Info</button>
                   </label>
                   <input 
+                    id="reg-otp"
+                    name="otp"
                     type="text" 
                     value={otp} 
                     onChange={e => setOtp(e.target.value)} 

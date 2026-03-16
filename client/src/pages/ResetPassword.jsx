@@ -70,8 +70,8 @@ export default function ResetPassword() {
         {step === 1 ? (
           <form onSubmit={handleRequestOtp} className="flex flex-col gap-4 animate-fade-in-up">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Account Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
+              <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Account Email</label>
+              <input id="reset-email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="you@example.com" required />
             </div>
 
             <button type="submit" disabled={loading} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-all shadow-md mt-4 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70">
@@ -90,11 +90,13 @@ export default function ResetPassword() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 flex justify-between">
+                <label htmlFor="reset-otp" className="block text-sm font-medium text-gray-700 mb-1 ml-1 flex justify-between">
                   <span>Enter 6-digit OTP</span>
                   <button type="button" onClick={() => setStep(1)} className="text-red-500 text-xs hover:underline cursor-pointer font-semibold">Wrong email?</button>
                 </label>
                 <input 
+                  id="reset-otp"
+                  name="otp"
                   type="text" 
                   value={otp} 
                   onChange={e => setOtp(e.target.value)} 
@@ -106,8 +108,8 @@ export default function ResetPassword() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">New Password</label>
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a new password" required />
+                <label htmlFor="reset-new-password" name="password" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">New Password</label>
+                <input id="reset-new-password" name="password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Create a new password" required />
               </div>
 
               <button type="submit" disabled={loading || otp.length < 6} className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-colors shadow-md mt-4 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">

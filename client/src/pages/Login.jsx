@@ -57,16 +57,34 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email or Username</label>
-              <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="Enter email or username" required />
+              <label htmlFor="login-identifier" className="block text-sm font-medium text-gray-700 mb-1 ml-1 cursor-pointer">Email or Username</label>
+              <input 
+                id="login-identifier"
+                name="identifier"
+                type="text" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" 
+                placeholder="Enter email or username" 
+                required 
+              />
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-1 ml-1 cursor-pointer">
-                <label className="block text-sm font-medium text-gray-700">Password</label>
-                <Link to="/forgot-password" className="text-xs text-red-600 font-semibold hover:underline">Forgot password?</Link>
+                <label htmlFor="login-password" name="password" className="block text-sm font-medium text-gray-700">Password</label>
+                <Link to="/forgot-password" name="password-reset-link" className="text-xs text-red-600 font-semibold hover:underline">Forgot password?</Link>
               </div>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" placeholder="••••••••" required />
+              <input 
+                id="login-password"
+                name="password"
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                className="w-full bg-white border-2 border-gray-200 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-sm font-medium placeholder-gray-400" 
+                placeholder="••••••••" 
+                required 
+              />
             </div>
             
             <button type="submit" className="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-full hover:bg-red-700 transition-colors shadow-md mt-2">Log in</button>
