@@ -23,30 +23,8 @@ const app = express();
 // Trust proxy for Render/Vercel (needed for rate limiting and secure cookies)
 app.set('trust proxy', 1);
 
-// Security Headers
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginEmbedderPolicy: false
-}));
-
-// Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Apply rate limiting to all requests or specific routes
-// For now, applying to all to be safe for production
-app.use(limiter);
-
-// Performance
-app.use(compression());
-
 // Middleware Setup
-// CORS configuration to allow credentials (cookies) to be sent from frontend
+// 1. CORS (Must be first to handle preflights and ensure headers on error/blocks)
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map(o => o.trim());
 app.use(cors({
   origin: function (origin, callback) {
@@ -62,6 +40,25 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+
+// 2. Security Headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+}));
+
+// 3. Rate Limiting (Moved after CORS)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 500, // Increased limit for testing phase
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+// 4. Performance
+app.use(compression());
 
 // Logging based on environment
 const logFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
