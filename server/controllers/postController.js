@@ -3,6 +3,8 @@ const User = require('../models/User');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { cloudinary } = require('../config/cloudinary');
+const streamifier = require('streamifier');
 
 // @desc    Get feed
 // @route   GET /feed
@@ -86,7 +88,7 @@ const createPost = async (req, res, next) => {
       user: req.user.id,
       title,
       description,
-      image: req.file.filename,
+      image: req.file.path, // Store the Cloudinary URL
       isAIGenerated: false
     });
 
@@ -110,24 +112,23 @@ const createAIPost = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please provide imageUrl' });
     }
 
-    // The frontend sends an external URL (Picsum). We must download it so Feed.jsx works locally!
-    let filename = '';
+    // For AI images, we upload the external URL to Cloudinary
+    let cloudImageUrl = '';
     try {
-      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-      const buffer = Buffer.from(response.data, 'binary');
-      filename = `ai-${Date.now()}-${Math.floor(Math.random() * 1000)}.jpg`;
-      const filepath = path.join(__dirname, '../public/images/uploads', filename);
-      fs.writeFileSync(filepath, buffer);
-    } catch (downloadErr) {
-       console.error("Failed to download image, saving url directly", downloadErr);
-       filename = imageUrl; // Fallback, though Feed.jsx might fail to render it properly
+      const uploadResult = await cloudinary.uploader.upload(imageUrl, {
+        folder: 'inspira_uploads_ai'
+      });
+      cloudImageUrl = uploadResult.secure_url;
+    } catch (uploadErr) {
+      console.error("Cloudinary AI upload failed:", uploadErr);
+      cloudImageUrl = imageUrl; // Fallback to original URL
     }
 
     const newPost = await Post.create({
       user: req.user.id,
       title: title || 'AI Image',
       description,
-      image: filename,
+      image: cloudImageUrl,
       isAIGenerated: true
     });
 

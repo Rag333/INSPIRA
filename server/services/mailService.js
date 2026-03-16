@@ -9,14 +9,23 @@ const initTransporter = async () => {
       host: 'smtp.gmail.com',
       port: 587,
       secure: false, // true for 465, false for other ports
+      pool: true, // Use connection pooling
+      maxConnections: 3,
+      maxMessages: 100,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
       requireTLS: true,
       tls: {
-          rejectUnauthorized: false
-      }
+          rejectUnauthorized: false,
+          minVersion: 'TLSv1.2'
+      },
+      // Higher timeouts for cloud networking
+      connectionTimeout: 20000, // 20 seconds
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      family: 4 // Force IPv4
     });
   } else {
     // Generate a temporary Ethereal account for testing

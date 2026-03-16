@@ -84,7 +84,7 @@ export default function Navbar({ onOpenAI }) {
                   className="w-10 h-10 rounded-full bg-gray-200 cursor-pointer overflow-hidden border-2 border-transparent hover:border-gray-300 transition-all flex-shrink-0"
                 >
                     {user.profileImage ? (
-                        <img src={`${BACKEND_URL}/images/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Avatar" />
+                        <img src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Avatar" />
                     ) : (
                         <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white font-bold">{user.username?.charAt(0).toUpperCase()}</div>
                     )}

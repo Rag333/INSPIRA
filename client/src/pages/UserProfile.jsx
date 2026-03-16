@@ -96,7 +96,7 @@ export default function UserProfile() {
             {user.posts.map((post) => (
               <div key={post._id} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-200">
                 <img
-                  src={`${BACKEND_URL}/images/uploads/${post.image}`}
+                  src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`}
                   className="w-full object-cover rounded-2xl"
                   alt={post.title || ''}
                   loading="lazy"

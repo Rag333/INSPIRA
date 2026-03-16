@@ -45,7 +45,7 @@ const uploadProfileImage = async (req, res, next) => {
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { profileImage: req.file.filename },
+      { profileImage: req.file.path }, // Cloudinary URL
       { new: true }
     ).populate('savedPosts').populate('posts');
 

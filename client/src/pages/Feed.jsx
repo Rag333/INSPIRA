@@ -236,7 +236,7 @@ export default function Feed() {
           animate="show"
         >
           {posts.map((elem, idx) => {
-            const imageUrl = `${BACKEND_URL}/images/uploads/${elem.image}`;
+            const imageUrl = elem.image?.startsWith('http') ? elem.image : `${BACKEND_URL}/images/uploads/${elem.image}`;
             return (
               <motion.div key={elem._id || idx} variants={itemVariants} className="break-inside-avoid mb-4">
                 <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} transitionSpeed={2000} className="relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-300">
@@ -261,7 +261,7 @@ export default function Feed() {
                         {/* Avatar Circle */}
                         <div className="relative w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center p-[2px] ring-2 ring-red-400/60 shadow-inner">
                           {elem.user?.profileImage ? (
-                            <img src={`${BACKEND_URL}/images/uploads/${elem.user.profileImage}`} className="w-full h-full object-cover rounded-full" alt={elem.user.username} />
+                            <img src={elem.user.profileImage.startsWith('http') ? elem.user.profileImage : `${BACKEND_URL}/images/uploads/${elem.user.profileImage}`} className="w-full h-full object-cover rounded-full" alt={elem.user.username} />
                           ) : (
                             <div className="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
                               {elem.user.username.charAt(0).toUpperCase()}
