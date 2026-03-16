@@ -178,7 +178,7 @@ export default function Profile() {
               <div className="relative group cursor-pointer mb-4" onClick={() => fileInputRef.current?.click()}>
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-200 rounded-full overflow-hidden shadow-md border-4 border-white">
                       {user.profileImage ? (
-                          <img src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
+                          <img src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
                       ) : (
                           <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-4xl font-bold">
                               {user.username?.charAt(0).toUpperCase()}

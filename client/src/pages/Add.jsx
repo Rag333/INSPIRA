@@ -126,7 +126,7 @@ export default function Add() {
       } else {
         // Standard File Upload
         const formData = new FormData();
-        formData.append('postImage', file);
+        formData.append('image', file);
         formData.append('title', title);
         formData.append('description', description);
         
