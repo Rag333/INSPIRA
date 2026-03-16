@@ -178,7 +178,19 @@ export default function Profile() {
               <div className="relative group cursor-pointer mb-4" onClick={() => fileInputRef.current?.click()}>
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-200 rounded-full overflow-hidden shadow-md border-4 border-white">
                       {user.profileImage ? (
-                          <img src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} className="w-full h-full object-cover" alt="Profile" />
+                          <img 
+                            src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
+                            className="w-full h-full object-cover" 
+                            alt="Profile"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.parentElement.innerHTML = `
+                                <div class="w-full h-full flex items-center justify-center bg-blue-500 text-white text-4xl font-bold">
+                                  ${user.username?.charAt(0).toUpperCase()}
+                                </div>
+                              `;
+                            }}
+                          />
                       ) : (
                           <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-4xl font-bold">
                               {user.username?.charAt(0).toUpperCase()}
@@ -219,7 +231,7 @@ export default function Profile() {
                   user?.savedPosts?.length > 0 ? (
                       user.savedPosts.map((post) => (
                           <div key={post._id} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full object-cover rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
+                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                                   <div className="flex items-center justify-end gap-2">
                                       <button
@@ -256,7 +268,7 @@ export default function Profile() {
                   user?.posts?.length > 0 ? (
                       user.posts.map((post) => (
                           <div key={post._id} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full object-cover rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
+                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
                               {/* Delete overlay */}
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                                   <div className="flex justify-end">

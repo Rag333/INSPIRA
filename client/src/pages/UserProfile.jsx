@@ -73,6 +73,14 @@ export default function UserProfile() {
                 src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`}
                 className="w-full h-full object-cover"
                 alt={user.username}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = `
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-400 to-pink-500 text-white text-4xl font-bold">
+                      ${user.username?.charAt(0).toUpperCase()}
+                    </div>
+                  `;
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-400 to-pink-500 text-white text-4xl font-bold">
@@ -97,7 +105,7 @@ export default function UserProfile() {
               <div key={post._id} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-200">
                 <img
                   src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`}
-                  className="w-full object-cover rounded-2xl"
+                  className="w-full h-auto rounded-2xl"
                   alt={post.title || ''}
                   loading="lazy"
                   onError={(e) => { e.target.style.display = 'none'; }}

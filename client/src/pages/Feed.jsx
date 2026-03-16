@@ -240,7 +240,7 @@ export default function Feed() {
             return (
               <motion.div key={elem._id || idx} variants={itemVariants} className="break-inside-avoid mb-4">
                 <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} transitionSpeed={2000} className="relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-300">
-                  <img src={imageUrl} className="w-full object-cover rounded-2xl group-hover:scale-105 group-hover:brightness-75 transition-all duration-700" loading="lazy" alt={elem.title} />
+                  <img src={imageUrl} className="w-full h-auto rounded-2xl group-hover:scale-105 group-hover:brightness-75 transition-all duration-700" loading="lazy" alt={elem.title} />
                   {renderCardOverlay(
                     elem._id,
                     <button
@@ -261,7 +261,20 @@ export default function Feed() {
                         {/* Avatar Circle */}
                         <div className="relative w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center p-[2px] ring-2 ring-red-400/60 shadow-inner">
                           {elem.user?.profileImage ? (
-                            <img src={elem.user?.profileImage?.startsWith('http') ? elem.user.profileImage : `${BACKEND_URL}/images/uploads/${elem.user?.profileImage}`} className="w-full h-full object-cover rounded-full" alt={elem.user.username} />
+                            <img 
+                              src={elem.user.profileImage.startsWith('http') ? elem.user.profileImage : `${BACKEND_URL}/images/uploads/${elem.user.profileImage}`} 
+                              className="w-full h-full object-cover rounded-full" 
+                              alt={elem.user.username}
+                              onError={(e) => {
+                                // If image fails, clear it to trigger the initials fallback
+                                e.target.style.display = 'none';
+                                e.target.parentElement.innerHTML = `
+                                  <div class="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
+                                    ${elem.user.username.charAt(0).toUpperCase()}
+                                  </div>
+                                `;
+                              }}
+                            />
                           ) : (
                             <div className="w-full h-full rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
                               {elem.user.username.charAt(0).toUpperCase()}
