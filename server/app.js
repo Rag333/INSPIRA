@@ -92,6 +92,23 @@ app.use(passport.session());
 app.get('/health', (req, res) => res.json({ status: 'ok', environment: process.env.NODE_ENV }));
 app.get('/', (req, res) => res.json({ message: 'Inspira Backend is running!' }));
 
+// Google OAuth Routes (Moved here for better isolation)
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { 
+    failureRedirect: process.env.NODE_ENV === 'production' 
+      ? 'https://inspira-seven.vercel.app/login' 
+      : 'http://localhost:5173/login' 
+  }),
+  (req, res) => {
+    const redirectUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://inspira-seven.vercel.app/feed' 
+      : 'http://localhost:5173/feed';
+    res.redirect(redirectUrl);
+  }
+);
+
 // Mount Routes
 app.use('/', routes);
 
