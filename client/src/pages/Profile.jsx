@@ -234,7 +234,15 @@ export default function Profile() {
                   user?.savedPosts?.length > 0 ? (
                       user.savedPosts.map((post) => (
                           <div key={post._id} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
+                               <img 
+                                 src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} 
+                                 className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" 
+                                 alt={post.title} 
+                                 onError={(e) => {
+                                   e.target.onerror = null;
+                                   e.target.src = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80";
+                                 }}
+                               />
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                                   <div className="flex items-center justify-end gap-2">
                                       <button
@@ -271,7 +279,15 @@ export default function Profile() {
                   user?.posts?.length > 0 ? (
                       user.posts.map((post) => (
                           <div key={post._id} className="break-inside-avoid mb-4 relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                              <img src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" alt={post.title} />
+                              <img 
+                                src={post.image?.startsWith('http') ? post.image : `${BACKEND_URL}/images/uploads/${post.image}`} 
+                                className="w-full h-auto rounded-2xl group-hover:brightness-75 transition-all duration-300" 
+                                alt={post.title} 
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80";
+                                }}
+                              />
                               {/* Delete overlay */}
                               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3">
                                   <div className="flex justify-end">

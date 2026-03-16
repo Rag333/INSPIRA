@@ -240,7 +240,16 @@ export default function Feed() {
             return (
               <motion.div key={elem._id || idx} variants={itemVariants} className="break-inside-avoid mb-4">
                 <Tilt tiltMaxAngleX={5} tiltMaxAngleY={5} scale={1.02} transitionSpeed={2000} className="relative group rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-300">
-                  <img src={imageUrl} className="w-full h-auto rounded-2xl group-hover:scale-105 group-hover:brightness-75 transition-all duration-700" loading="lazy" alt={elem.title} />
+                  <img 
+                    src={imageUrl} 
+                    className="w-full h-auto rounded-2xl group-hover:scale-105 group-hover:brightness-75 transition-all duration-700" 
+                    loading="lazy" 
+                    alt={elem.title} 
+                    onError={(e) => {
+                      e.target.onerror = null; // Prevent infinite loop
+                      e.target.src = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80"; // Abstract aesthetic fallback
+                    }}
+                  />
                   {renderCardOverlay(
                     elem._id,
                     <button

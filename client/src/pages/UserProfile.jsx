@@ -108,7 +108,10 @@ export default function UserProfile() {
                   className="w-full h-auto rounded-2xl"
                   alt={post.title || ''}
                   loading="lazy"
-                  onError={(e) => { e.target.style.display = 'none'; }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80";
+                  }}
                 />
                 {post.title && (
                   <div className="p-2 px-3">
