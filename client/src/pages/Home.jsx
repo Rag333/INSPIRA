@@ -67,6 +67,29 @@ export default function Home() {
     if (user) navigate('/feed');
   }, [user, navigate]);
 
+  const loadMore = useCallback(() => {
+    if (loading) return;
+    setLoading(true);
+    // Simulate slight delay for effect
+    setTimeout(() => {
+      const start = page * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const newBatch = IMAGE_POOL.slice(start, end);
+      
+      if (newBatch.length > 0) {
+        setImages(prev => [...prev, ...newBatch]);
+        setPage(prev => prev + 1);
+      }
+      setLoading(false);
+    }, 400);
+  }, [page, loading]);
+
+  useEffect(() => {
+    if (images.length === 0) {
+      loadMore();
+    }
+  }, [images.length, loadMore]);
+
   const handleSave = async (imgObj) => {
     if (savingIds.has(imgObj.id) || savedIds.has(imgObj.id)) return;
     setSavingIds(prev => new Set(prev).add(imgObj.id));

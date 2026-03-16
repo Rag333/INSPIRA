@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { BACKEND_URL } from '../config';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {

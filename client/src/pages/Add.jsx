@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function Add() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUser } = useAuth();
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(location.state?.generatedUrl || '');
