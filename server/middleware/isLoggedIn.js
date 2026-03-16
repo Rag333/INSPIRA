@@ -15,6 +15,8 @@ const isLoggedIn = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log('DEBUG: Auth failed - No token found in cookies or headers');
+      console.log('DEBUG: Cookies received:', req.cookies);
       return res.status(401).json({ success: false, message: 'Not authorized to access this route. No token provided.' });
     }
 
@@ -27,12 +29,14 @@ const isLoggedIn = async (req, res, next) => {
       const user = await User.findById(decoded.id);
       
       if (!user) {
+        console.log(`DEBUG: Auth failed - User with ID ${decoded.id} not found`);
         return res.status(401).json({ success: false, message: 'User belonging to this token no longer exists.' });
       }
 
       req.user = user;
       next();
     } catch (err) {
+      console.log('DEBUG: Auth failed - JWT verification error:', err.message);
       return res.status(401).json({ success: false, message: 'Not authorized to access this route. Invalid token.' });
     }
   } catch (err) {
