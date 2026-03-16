@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
 export default function Register() {
   const [randomImage] = useState(() => `https://picsum.photos/seed/${Math.random()}/800/1200`);
@@ -65,7 +66,7 @@ export default function Register() {
   };
 
   const loginWithGoogle = () => {
-    window.location.href = 'http://localhost:3000/auth/google'; // Re-add if passport Google OAuth is re-enabled, else hide
+    window.location.href = `${BACKEND_URL}/auth/google`; // Re-add if passport Google OAuth is re-enabled, else hide
   };
 
   return (

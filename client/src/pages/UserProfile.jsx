@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
 export default function UserProfile() {
   const { username } = useParams();
@@ -69,7 +70,7 @@ export default function UserProfile() {
           <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden bg-gray-200 shadow-md border-4 border-white mb-4">
             {user.profileImage ? (
               <img
-                src={user.profileImage.startsWith('http') ? user.profileImage : `http://localhost:3000/images/uploads/${user.profileImage}`}
+                src={user.profileImage.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`}
                 className="w-full h-full object-cover"
                 alt={user.username}
               />
@@ -95,7 +96,7 @@ export default function UserProfile() {
             {user.posts.map((post) => (
               <div key={post._id} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-200">
                 <img
-                  src={`http://localhost:3000/images/uploads/${post.image}`}
+                  src={`${BACKEND_URL}/images/uploads/${post.image}`}
                   className="w-full object-cover rounded-2xl"
                   alt={post.title || ''}
                   loading="lazy"

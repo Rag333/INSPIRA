@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -94,7 +95,7 @@ export default function NotificationBell() {
                   {/* Liker avatar */}
                   <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 border-2 border-white shadow-sm">
                     {n.likerProfileImage ? (
-                      <img src={`http://localhost:3000/images/uploads/${n.likerProfileImage}`} className="w-full h-full object-cover" alt="" />
+                      <img src={`${BACKEND_URL}/images/uploads/${n.likerProfileImage}`} className="w-full h-full object-cover" alt="" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
                         {n.likerUsername?.charAt(0).toUpperCase()}
@@ -114,7 +115,7 @@ export default function NotificationBell() {
                   {/* Post thumbnail */}
                   {n.postImage && (
                     <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                      <img src={`http://localhost:3000/images/uploads/${n.postImage}`} className="w-full h-full object-cover" alt="" />
+                      <img src={`${BACKEND_URL}/images/uploads/${n.postImage}`} className="w-full h-full object-cover" alt="" />
                     </div>
                   )}
 

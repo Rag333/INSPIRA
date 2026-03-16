@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { BACKEND_URL } from '../config';
 
 export default function Login() {
   const [randomImage] = useState(() => `https://picsum.photos/seed/${Math.random()}/800/1200`);
@@ -23,7 +24,7 @@ export default function Login() {
   };
 
   const loginWithGoogle = () => {
-    window.location.href = 'http://localhost:3000/auth/google';
+    window.location.href = `${BACKEND_URL}/auth/google`;
   };
 
   return (

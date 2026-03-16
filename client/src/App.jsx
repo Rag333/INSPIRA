@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (isAuthenticated === null) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><i className="ri-loader-4-line animate-spin text-4xl text-red-600"></i></div>;
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
 function Layout() {
@@ -36,12 +36,12 @@ function Layout() {
       <AIPortal isOpen={aiPortalOpen} onClose={() => setAiPortalOpen(false)} />
       <Routes>
         {/* Public Routes */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ResetPassword />} />
         
         {/* Protected Routes */}
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/add" element={<ProtectedRoute><Add /></ProtectedRoute>} />
