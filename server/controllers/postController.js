@@ -157,14 +157,19 @@ const toggleLike = async (req, res, next) => {
     const likedIndex = post.likes.indexOf(req.user.id);
     let action = 'unliked';
 
-    if (likedIndex > -1) {
-      post.likes.splice(likedIndex, 1);
-    } else {
-      post.likes.push(req.user.id);
+    const update = (likedIndex > -1) 
+      ? { $pull: { likes: req.user.id } } 
+      : { $push: { likes: req.user.id } };
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      update,
+      { new: true, runValidators: false }
+    );
+    
+    if (likedIndex === -1) {
       action = 'liked';
     }
-
-    await post.save();
 
     // Create Notification if liked (and not liking own post)
     if (action === 'liked' && post.user.toString() !== req.user.id.toString()) {
@@ -178,7 +183,7 @@ const toggleLike = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({ success: true, likesCount: post.likes.length });
+    res.status(200).json({ success: true, likesCount: updatedPost.likes.length });
   } catch (error) {
     next(error);
   }
@@ -201,8 +206,9 @@ const deletePost = async (req, res, next) => {
     await post.deleteOne();
 
     // Remove from user posts
-    req.user.posts.pull(post._id);
-    await req.user.save();
+    await User.findByIdAndUpdate(req.user.id, {
+      $pull: { posts: post._id }
+    }, { runValidators: false });
 
     res.status(200).json({ success: true, message: 'Post deleted' });
   } catch (error) {

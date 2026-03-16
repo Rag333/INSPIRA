@@ -22,8 +22,7 @@ passport.use(new GoogleStrategy({
       user = await User.findOne({ email });
 
       if (user) {
-        user.googleId = profile.id;
-        await user.save();
+        user = await User.findByIdAndUpdate(user._id, { googleId: profile.id }, { new: true, runValidators: false });
         return done(null, user);
       }
 
