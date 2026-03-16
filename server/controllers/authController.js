@@ -213,8 +213,8 @@ const resetPassword = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    user.password = newPassword; // The pre-save hook will hash this
-    await user.save();
+    user.password = newPassword; 
+    await user.save({ validateBeforeSave: false }); // Bypass validation for reset
     
     res.status(200).json({ success: true, message: 'Password reset successfully' });
   } catch (error) {

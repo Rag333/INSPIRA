@@ -85,21 +85,24 @@ const toggleSave = async (req, res, next) => {
     const user = await User.findById(req.user.id);
     const postId = req.params.id;
 
-    if (!user) return res.status(404).json({ success: false });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const isSaved = user.savedPosts.includes(postId);
 
+    let update;
     if (isSaved) {
-      user.savedPosts.pull(postId);
+      update = { $pull: { savedPosts: postId } };
     } else {
-      user.savedPosts.push(postId);
+      update = { $push: { savedPosts: postId } };
     }
 
-    await user.save();
-    await user.populate('savedPosts');
-    await user.populate('posts');
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      update,
+      { new: true, runValidators: false }
+    ).populate('savedPosts').populate('posts');
 
-    res.status(200).json({ success: true, user });
+    res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     next(error);
   }
