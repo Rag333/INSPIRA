@@ -43,6 +43,10 @@ const uploadProfileImage = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please upload an image' });
     }
 
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: 'Authentication failed. No user found in request.' });
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { profileImage: req.file.path }, // Cloudinary URL
