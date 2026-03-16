@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const dns = require('dns');
+const fs = require('fs');
 
 // Force Node to prefer IPv4 over IPv6. 
 // This fixes ENETUNREACH errors when connecting to Gmail/SMTP on cloud providers like Render.
@@ -78,6 +79,17 @@ app.use(logger(logFormat));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.get('/images/uploads/:filename', (req, res, next) => {
+  const filePath = path.join(__dirname, 'public', 'images', 'uploads', req.params.filename);
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // File does not exist, redirect to aesthetic placeholder
+      return res.redirect('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&q=80');
+    }
+    next(); // Continue to static middleware
+  });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
