@@ -29,7 +29,9 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173').split
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    // Allow if in whitelist OR if it's a Vercel preview subdomain for this project
+    const isVercelPreview = origin.endsWith('.vercel.app') && origin.includes('inspira');
+    if (allowedOrigins.includes(origin) || isVercelPreview) {
       callback(null, origin);
     } else {
       console.log(`CORS blocked for origin: ${origin}`);
