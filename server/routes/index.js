@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 const auth = require('../controllers/authController');
 const user = require('../controllers/userController');
@@ -16,6 +17,23 @@ router.post('/send-otp', auth.sendOTP);
 router.post('/verify-otp', auth.verifyOTP);
 router.post('/forgot-password', auth.forgotPassword);
 router.post('/reset-password', auth.resetPassword);
+
+// Basic health check/root route
+router.get('/', (req, res) => res.json({ message: 'Inspira Backend is running!' }));
+
+// Google OAuth Routes
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect back to frontend feed
+    const redirectUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://inspira-seven.vercel.app/feed' 
+      : 'http://localhost:5173/feed';
+    res.redirect(redirectUrl);
+  }
+);
 
 // Profile and User
 router.get('/profile', isLoggedIn, user.getProfile);

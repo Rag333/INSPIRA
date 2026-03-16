@@ -9,6 +9,7 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const passport = require('passport');
+require('./config/passport');
 
 // Connect to Database
 const connectDB = require('./config/db');

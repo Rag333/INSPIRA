@@ -3,25 +3,29 @@ const User = require('../models/User');
 
 const isLoggedIn = async (req, res, next) => {
   try {
+    // 1. Check if user is already authenticated via Passport Session
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      return next();
+    }
+
     let token;
 
-    // Check cookies for token
+    // 2. Check cookies for JWT token
     if (req.cookies.token) {
       token = req.cookies.token;
     } 
-    // Fallback to checking Authorization header Support (Bearer token)
+    // 3. Fallback to checking Authorization header Support (Bearer token)
     else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
 
     if (!token) {
-      console.log('DEBUG: Auth failed - No token found in cookies or headers');
-      console.log('DEBUG: Cookies received:', req.cookies);
-      return res.status(401).json({ success: false, message: 'Not authorized to access this route. No token provided.' });
+      console.log('DEBUG: Auth failed - No session or token found');
+      return res.status(401).json({ success: false, message: 'Not authorized to access this route. No session or token provided.' });
     }
 
     try {
-      // Verify token
+      // Verify JWT token
       const secret = process.env.JWT_SECRET;
       const decoded = jwt.verify(token, secret);
 
