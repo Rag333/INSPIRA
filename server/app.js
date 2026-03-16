@@ -4,6 +4,9 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 
 // Connect to Database
 const connectDB = require('./config/db');
@@ -17,14 +20,43 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// Trust proxy for Render/Vercel (needed for rate limiting and secure cookies)
+app.set('trust proxy', 1);
+
+// Security Headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to all requests or specific routes
+// For now, applying to all to be safe for production
+app.use(limiter);
+
+// Performance
+app.use(compression());
+
 // Middleware Setup
 // CORS configuration to allow credentials (cookies) to be sent from frontend
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
-app.use(logger('dev'));
+// Logging based on environment
+const logFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
+app.use(logger(logFormat));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
