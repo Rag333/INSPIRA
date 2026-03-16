@@ -180,6 +180,7 @@ export default function Profile() {
           <div className="max-w-4xl mx-auto flex flex-col items-center">
               <div className="relative group cursor-pointer mb-4" onClick={() => fileInputRef.current?.click()}>
                   <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-200 rounded-full overflow-hidden shadow-md border-4 border-white">
+                      {user.profileImage ? (
                           <img 
                             src={user.profileImage?.startsWith('http') ? user.profileImage : `${BACKEND_URL}/images/uploads/${user.profileImage}`} 
                             className="w-full h-full object-cover" 
@@ -193,6 +194,11 @@ export default function Profile() {
                               `;
                             }}
                           />
+                      ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white text-4xl font-bold">
+                              {user.username?.charAt(0).toUpperCase()}
+                          </div>
+                      )}
                   </div>
                   <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                       <i className="ri-camera-fill text-white text-2xl"></i>
