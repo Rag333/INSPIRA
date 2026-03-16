@@ -3,7 +3,7 @@
  * Placed at the very end of the express middleware stack
  */
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack); // Log the error stack to console
+  console.error(`[ERROR] ${req.method} ${req.originalUrl}:`, err.stack); // Log the error stack to console
 
   // Default status code and message
   const statusCode = err.status || 500;
