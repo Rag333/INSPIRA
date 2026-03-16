@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import Background3D from '../components/Background3D';
 
 export default function Feed() {
   const [data, setData] = useState({ posts: [], fallbacks: [] });
