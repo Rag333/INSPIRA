@@ -33,12 +33,21 @@ const errorHandler = (err, req, res, next) => {
     });
   }
   
-  // Multner specific errors
+  // Multer specific errors
   if (err.name === 'MulterError') {
      return res.status(400).json({
        success: false,
-       message: err.message
+       message: `Upload Error: ${err.message}`
      })
+  }
+
+  // Cloudinary/Storage Errors
+  if (err.message && (err.message.includes('cloudinary') || err.message.includes('CLOUDINARY'))) {
+    return res.status(500).json({
+      success: false,
+      message: 'Persistent Storage Error: Your Cloudinary API keys are likely missing or invalid. Please check your Render environment variables.',
+      error: err.message
+    });
   }
 
   // Generic fallback

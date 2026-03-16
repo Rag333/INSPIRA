@@ -92,9 +92,10 @@ const createPost = async (req, res, next) => {
       isAIGenerated: false
     });
 
-    // Add to user posts array
-    req.user.posts.push(newPost._id);
-    await req.user.save();
+    // Add to user posts array using findByIdAndUpdate to bypass other validations
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { posts: newPost._id }
+    });
 
     res.status(201).json({ success: true, post: newPost });
   } catch (error) {
@@ -133,8 +134,9 @@ const createAIPost = async (req, res, next) => {
     });
 
     // Add to user posts array
-    req.user.posts.push(newPost._id);
-    await req.user.save();
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { posts: newPost._id }
+    });
 
     res.status(201).json({ success: true, post: newPost });
   } catch (error) {
