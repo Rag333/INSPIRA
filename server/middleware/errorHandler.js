@@ -42,11 +42,18 @@ const errorHandler = (err, req, res, next) => {
   }
 
   // Cloudinary/Storage Errors
-  if (err.message && (err.message.includes('cloudinary') || err.message.includes('CLOUDINARY'))) {
+  const isCloudinaryError = (err.message && (
+    err.message.includes('cloudinary') || 
+    err.message.includes('CLOUDINARY') || 
+    err.message.includes('Must provide cloud_name') ||
+    err.message.includes('Must provide api_key')
+  ));
+
+  if (isCloudinaryError) {
     return res.status(500).json({
       success: false,
-      message: 'Persistent Storage Error: Your Cloudinary API keys are likely missing or invalid. Please check your Render environment variables.',
-      error: err.message
+      message: 'Infrastructure Error: Cloudinary is not configured correctly.',
+      error: 'Your Cloudinary API credentials (CLOUD_NAME, API_KEY, API_SECRET) are missing from your Render Environment Variables. Please add them to your Render dashboard to enable image uploads.'
     });
   }
 

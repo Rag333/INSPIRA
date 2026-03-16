@@ -38,7 +38,7 @@ export default function Profile() {
       if (res.data.success) setUser(res.data.user);
     } catch (err) { 
       console.error('Failed to upload image', err); 
-      alert('Upload failed: ' + (err.response?.data?.error || err.response?.data?.message || err.message));
+      alert((err.response?.data?.message || 'Upload failed') + ': ' + (err.response?.data?.error || err.message));
     }
   };
 
