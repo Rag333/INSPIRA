@@ -28,7 +28,7 @@ const editProfile = async (req, res, next) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { $set: updateFields },
-      { new: true, runValidators: true }
+      { new: true, runValidators: false }
     ).populate('savedPosts').populate('posts');
 
     res.status(200).json({ success: true, user });
