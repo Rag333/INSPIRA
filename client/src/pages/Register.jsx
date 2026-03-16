@@ -1,7 +1,4 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { BACKEND_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const [randomImage] = useState(() => `https://picsum.photos/seed/${Math.random()}/800/1200`);
@@ -19,6 +16,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   // Step 1: Request OTP
   const handleRegister = async (e) => {
@@ -55,6 +53,7 @@ export default function Register() {
         // If OTP is good, proceed with actual registration
         const registerRes = await axios.post('/register', { fullname, username, email, password });
         if (registerRes.data.success) {
+          login(registerRes.data.user);
           navigate('/feed');
         }
       }

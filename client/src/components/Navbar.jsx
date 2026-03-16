@@ -4,28 +4,16 @@ import axios from 'axios';
 import NotificationBell from './NotificationBell';
 import { BACKEND_URL } from '../config';
 
+import { useAuth } from '../context/AuthContext';
+
 export default function Navbar({ onOpenAI }) {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   const isHome = location.pathname === '/';
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await axios.get('/profile');
-        if (res.data.success) {
-          setUser(res.data.user);
-        }
-      } catch (err) {
-        setUser(null);
-      }
-    };
-    checkAuth();
-  }, [location.pathname]); // Re-check on nav
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -39,13 +27,8 @@ export default function Navbar({ onOpenAI }) {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await axios.get('/logout');
-      setUser(null);
-      navigate('/');
-    } catch(err) {
-      console.error(err);
-    }
+    await logout();
+    navigate('/');
   };
 
   return (

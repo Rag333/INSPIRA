@@ -31,8 +31,8 @@ const isLoggedIn = async (req, res, next) => {
       const secret = process.env.JWT_SECRET;
       const decoded = jwt.verify(token, secret);
 
-      // Attach user to request
-      const user = await User.findById(decoded.id);
+      // Attach user to request - Select only necessary fields for performance
+      const user = await User.findById(decoded.id).select('username email profileImage fullname savedPosts posts');
       
       if (!user) {
         console.log(`DEBUG: Auth failed - User with ID ${decoded.id} not found`);

@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BACKEND_URL } from '../config';
 
+import { useAuth } from '../context/AuthContext';
+
 export default function Login() {
   const [randomImage] = useState(() => `https://picsum.photos/seed/${Math.random()}/800/1200`);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,6 +19,7 @@ export default function Login() {
     try {
       const res = await axios.post('/login', { username, password });
       if (res.data.success) {
+        login(res.data.user);
         navigate('/feed');
       }
     } catch (err) {

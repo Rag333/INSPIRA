@@ -5,24 +5,24 @@ const fs = require('fs');
 const path = require('path');
 const { cloudinary } = require('../config/cloudinary');
 const streamifier = require('streamifier');
+const mongoose = require('mongoose');
 
 // @desc    Get feed
 // @route   GET /feed
 const getFeed = async (req, res, next) => {
   try {
-    const userObj = req.user; // Provided by isLoggedIn middleware
+    const userObj = req.user; 
     let likedPostIds = [];
 
-    const mongoose = require('mongoose');
     // 1. Build Base Query - Exclude logged-in user's posts
-    let query = { user: { $ne: new mongoose.Types.ObjectId(userObj._id) } };
+    let query = { user: { $ne: new mongoose.Types.ObjectId(userObj.id || userObj._id) } };
 
     // 2. Add search parameters if present
     const q = req.query.q;
     if (q) {
       query = {
         $and: [
-          { user: { $ne: new mongoose.Types.ObjectId(userObj._id) } },
+          { user: { $ne: new mongoose.Types.ObjectId(userObj.id || userObj._id) } },
           {
             $or: [
               { title: { $regex: q, $options: 'i' } },

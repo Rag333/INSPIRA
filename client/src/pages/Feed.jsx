@@ -1,10 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import Tilt from 'react-parallax-tilt';
-import Background3D from '../components/Background3D';
-import { BACKEND_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 export default function Feed() {
   const [data, setData] = useState({ posts: [], fallbacks: [] });
@@ -14,6 +8,7 @@ export default function Feed() {
   const [likedIds, setLikedIds] = useState(new Set());
   const [likeCounts, setLikeCounts] = useState({});
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -39,8 +34,7 @@ export default function Feed() {
         if (res.data.success) {
           setData({ 
             posts: res.data.posts || [], 
-            fallbacks: res.data.fallbacks || [], 
-            user: res.data.user || null 
+            fallbacks: res.data.fallbacks || []
           });
           
           if (!q) {
@@ -74,12 +68,12 @@ export default function Feed() {
     // The useEffect debounce will handle the actual fetch
   };
 
-  const { posts = [], fallbacks = [], user } = data;
+  const { posts = [], fallbacks = [] } = data;
 
   const handleSave = async (postId) => {
     try {
       const res = await axios.post(`/save/${postId}`);
-      if (res.data.success) setData(prev => ({ ...prev, user: res.data.user }));
+      if (res.data.success) setUser(res.data.user);
     } catch(err) { 
       console.error('Failed to save', err);
       alert('Action failed: ' + (err.response?.data?.error || err.response?.data?.message || 'Check your connection'));

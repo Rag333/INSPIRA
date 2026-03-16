@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BACKEND_URL } from '../config';
 
+import { useAuth } from '../context/AuthContext';
+
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, setUser, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('saved');
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState({ fullname: '', email: '' });
@@ -13,20 +14,6 @@ export default function Profile() {
   const [editError, setEditError] = useState('');
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await axios.get('/profile');
-        if (res.data.success) setUser(res.data.user);
-      } catch (err) {
-        if (err.response?.status === 401) navigate('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [navigate]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];

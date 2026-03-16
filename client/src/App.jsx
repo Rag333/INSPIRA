@@ -12,21 +12,24 @@ import AIPortal from './components/AIPortal';
 import UserProfile from './pages/UserProfile';
 import ResetPassword from './pages/ResetPassword';
 
+import { AuthProvider, useAuth } from './context/AuthContext';
+
 // A lightweight protection wrapper checking the active session
 const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  useEffect(() => {
-    axios.get('/profile')
-      .then(() => setIsAuthenticated(true))
-      .catch(() => setIsAuthenticated(false));
-  }, []);
+  const { user, loading } = useAuth();
+  
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <i className="ri-loader-4-line animate-spin text-4xl text-red-600"></i>
+    </div>
+  );
 
-  if (isAuthenticated === null) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><i className="ri-loader-4-line animate-spin text-4xl text-red-600"></i></div>;
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  return user ? children : <Navigate to="/" replace />;
 };
 
 function Layout() {
   const location = useLocation();
+  const { user } = useAuth();
   const hideNavbar = location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/forgot-password';
   const [aiPortalOpen, setAiPortalOpen] = useState(false);
   
@@ -37,8 +40,8 @@ function Layout() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={user ? <Navigate to="/feed" /> : <Login />} />
+        <Route path="/register" element={user ? <Navigate to="/feed" /> : <Register />} />
         <Route path="/forgot-password" element={<ResetPassword />} />
         
         {/* Protected Routes */}
@@ -54,7 +57,9 @@ function Layout() {
 function App() {
   return (
     <Router>
-      <Layout />
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
     </Router>
   )
 }
