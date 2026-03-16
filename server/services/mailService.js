@@ -1,6 +1,12 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 let transporter;
+
+// Force IPv4 for smtp.gmail.com because Render's IPv6 routes are often unreachable (ENETUNREACH)
+const ipv4Only = (hostname, options, callback) => {
+  return dns.lookup(hostname, { family: 4 }, callback);
+};
 
 // Initialize the transporter
 const initTransporter = async () => {
@@ -25,7 +31,7 @@ const initTransporter = async () => {
       connectionTimeout: 20000, // 20 seconds
       greetingTimeout: 20000,
       socketTimeout: 30000,
-      family: 4 // Force IPv4
+      lookup: ipv4Only // Custom lookup to force IPv4
     });
   } else {
     // Generate a temporary Ethereal account for testing
